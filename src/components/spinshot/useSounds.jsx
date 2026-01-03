@@ -33,33 +33,31 @@ export const useSounds = () => {
   useEffect(() => {
     const settings = settingsContextRef.current?.settings;
 
+    // Background music URL - using a free upbeat track
+    const musicUrl = 'https://cdn.pixabay.com/audio/2022/03/10/audio_4f87ba0f02.mp3';
+
     if (!settings?.musicEnabled) {
       if (musicAudioRef.current) {
         musicAudioRef.current.pause();
+        musicAudioRef.current.currentTime = 0;
       }
       return;
     }
-
-    // Background music URL - using a free upbeat track
-    const musicUrl = 'https://cdn.pixabay.com/audio/2022/03/10/audio_4f87ba0f02.mp3';
 
     if (!musicAudioRef.current) {
       const audio = new Audio(musicUrl);
       audio.loop = true;
       audio.volume = settings.musicVolume || 0.5;
+      audio.preload = 'auto';
       musicAudioRef.current = audio;
       
       // Try to play immediately
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Auto-play prevented - will retry on first user interaction
-          console.log('Music will start on first interaction');
-        });
-      }
+      audio.play().catch(() => {
+        console.log('Music autoplay blocked - will start on first click');
+      });
     } else {
       musicAudioRef.current.volume = settings.musicVolume || 0.5;
-      if (musicAudioRef.current.paused) {
+      if (musicAudioRef.current.paused && settings.musicEnabled) {
         musicAudioRef.current.play().catch(() => {});
       }
     }
@@ -89,6 +87,11 @@ export const useSounds = () => {
   }, []);
 
   const dartThrow = useCallback(() => {
+    // Try to start music on any user interaction
+    if (musicAudioRef.current && musicAudioRef.current.paused && settingsContextRef.current?.settings?.musicEnabled) {
+      musicAudioRef.current.play().catch(() => {});
+    }
+    
     const ctx = audioContextRef.current;
     const settings = settingsContextRef.current?.settings;
     if (!ctx || (settings && !settings.soundEnabled)) return;
