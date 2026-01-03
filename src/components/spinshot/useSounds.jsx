@@ -36,7 +36,6 @@ export const useSounds = () => {
     if (!settings?.musicEnabled) {
       if (musicAudioRef.current) {
         musicAudioRef.current.pause();
-        musicAudioRef.current.currentTime = 0;
       }
       return;
     }
@@ -45,25 +44,25 @@ export const useSounds = () => {
     const musicUrl = 'https://cdn.pixabay.com/audio/2022/03/10/audio_4f87ba0f02.mp3';
 
     if (!musicAudioRef.current) {
-      musicAudioRef.current = new Audio(musicUrl);
-      musicAudioRef.current.loop = true;
-    }
-
-    const volume = settings.musicVolume || 0.5;
-    musicAudioRef.current.volume = volume;
-    
-    const playPromise = musicAudioRef.current.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        // Auto-play was prevented, user needs to interact first
-      });
-    }
-
-    return () => {
-      if (musicAudioRef.current) {
-        musicAudioRef.current.pause();
+      const audio = new Audio(musicUrl);
+      audio.loop = true;
+      audio.volume = settings.musicVolume || 0.5;
+      musicAudioRef.current = audio;
+      
+      // Try to play immediately
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Auto-play prevented - will retry on first user interaction
+          console.log('Music will start on first interaction');
+        });
       }
-    };
+    } else {
+      musicAudioRef.current.volume = settings.musicVolume || 0.5;
+      if (musicAudioRef.current.paused) {
+        musicAudioRef.current.play().catch(() => {});
+      }
+    }
   }, [settingsContextRef.current?.settings?.musicEnabled, settingsContextRef.current?.settings?.musicVolume]);
 
   const playTone = useCallback((frequency, duration, type = 'sine', volume = 0.3) => {
@@ -237,6 +236,12 @@ export const useSounds = () => {
   const buttonClick = useCallback(() => {
     const ctx = audioContextRef.current;
     const settings = settingsContextRef.current?.settings;
+    
+    // Try to start background music on first user interaction
+    if (musicAudioRef.current && musicAudioRef.current.paused && settings?.musicEnabled) {
+      musicAudioRef.current.play().catch(() => {});
+    }
+    
     if (!ctx || (settings && !settings.soundEnabled)) return;
 
     const volume = (settings?.soundVolume || 0.7) * 0.25;
