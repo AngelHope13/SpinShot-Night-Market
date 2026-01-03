@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Skull, RotateCcw, Home, Star, Trophy } from 'lucide-react';
 import { useSounds } from './useSounds';
+import { base44 } from '@/api/base44Client';
 
 export default function GameOver({ totalScore, levelReached, onPlayAgain, onMenu }) {
   const sounds = useSounds();

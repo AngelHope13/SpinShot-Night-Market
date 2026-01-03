@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Crown, RotateCcw, Home, Star, Sparkles } from 'lucide-react';
 import { useSounds } from './useSounds';
+import { base44 } from '@/api/base44Client';
 
 export default function Victory({ totalScore, onPlayAgain, onMenu }) {
   const [confetti, setConfetti] = useState([]);
@@ -9,7 +10,20 @@ export default function Victory({ totalScore, onPlayAgain, onMenu }) {
 
   useEffect(() => {
     sounds.victory();
+    saveScore();
   }, [sounds]);
+
+  const saveScore = async () => {
+    try {
+      await base44.entities.Score.create({
+        total_score: totalScore,
+        level_reached: 5,
+        game_date: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Failed to save score:', error);
+    }
+  };
 
   useEffect(() => {
     const particles = Array.from({ length: 50 }, (_, i) => ({

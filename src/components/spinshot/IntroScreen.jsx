@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, HelpCircle, Users, Settings } from 'lucide-react';
+import { Play, HelpCircle, Users, Settings, Trophy } from 'lucide-react';
 import { useSounds } from './useSounds';
 
 const Lantern = ({ delay, x }) => (
@@ -134,6 +134,19 @@ export default function IntroScreen({ onStart, onHowToPlay, onCredits, onSetting
             whileHover={{ x: 0 }}
             transition={{ duration: 0.3 }}
           />
+        </motion.button>
+
+        <motion.button
+          onClick={() => {
+            sounds.buttonClick();
+            onLeaderboard();
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-orange-400 rounded-2xl font-bold text-white shadow-xl shadow-yellow-500/30 flex items-center justify-center gap-2"
+        >
+          <Trophy className="w-5 h-5" />
+          LEADERBOARD
         </motion.button>
 
         <div className="grid grid-cols-3 gap-3">
