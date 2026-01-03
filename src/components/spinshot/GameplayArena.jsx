@@ -61,11 +61,16 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [impactWaves, setImpactWaves] = useState([]);
   const [projectiles, setProjectiles] = useState([]);
   const [aimPosition, setAimPosition] = useState(null);
+  const [arcPoints, setArcPoints] = useState([]);
   const arenaRef = useRef(null);
   const projectileSpeed = 200; // pixels per frame - super fast!
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
   const { settings } = useSettings();
+  
+  // Arc simulation constants (visual only, doesn't affect dart physics)
+  const GRAVITY_SIM = 0.08;
+  const INITIAL_ARC_VELOCITY = 12;
 
   const renderTargetVisual = (target) => {
     if (settings.targetSkin === 'ghibli' && target.ghibliComponent) {
@@ -542,10 +547,44 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     const rect = arenaRef.current?.getBoundingClientRect();
     if (!rect) return;
     
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
     setAimPosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: mouseX,
+      y: mouseY,
     });
+    
+    // Calculate arc points for visual prediction
+    const startX = rect.width / 2;
+    const startY = rect.height - 50;
+    
+    const dx = mouseX - startX;
+    const dy = mouseY - startY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // Initial velocity direction
+    const vx = (dx / distance) * INITIAL_ARC_VELOCITY;
+    const vy = (dy / distance) * INITIAL_ARC_VELOCITY;
+    
+    // Simulate arc trajectory
+    const points = [];
+    let simX = startX;
+    let simY = startY;
+    let simVx = vx;
+    let simVy = vy;
+    
+    for (let i = 0; i < 50; i++) {
+      points.push({ x: simX, y: simY });
+      simX += simVx;
+      simY += simVy;
+      simVy += GRAVITY_SIM; // Apply gravity
+      
+      // Stop if off-screen
+      if (simY > rect.height || simX < 0 || simX > rect.width) break;
+    }
+    
+    setArcPoints(points);
   }, [darts]);
 
   const handlePowerupClick = useCallback((powerup, e) => {
@@ -904,7 +943,13 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                   <stop offset="0%" stopColor="rgba(236, 72, 153, 0.8)" />
                   <stop offset="100%" stopColor="rgba(236, 72, 153, 0.2)" />
                 </linearGradient>
+                <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(139, 92, 246, 0.6)" />
+                  <stop offset="100%" stopColor="rgba(139, 92, 246, 0.1)" />
+                </linearGradient>
               </defs>
+              
+              {/* Straight aiming line (actual dart path) */}
               <line
                 x1={arenaRef.current?.getBoundingClientRect().width / 2}
                 y1={(arenaRef.current?.getBoundingClientRect().height || 0) - 50}
@@ -915,7 +960,20 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                 strokeDasharray="5,5"
                 opacity="0.6"
               />
-              {/* Aim dots along the line */}
+              
+              {/* Predicted arc (visual only) */}
+              {arcPoints.length > 1 && (
+                <path
+                  d={`M ${arcPoints.map((p, i) => `${i === 0 ? '' : 'L '}${p.x} ${p.y}`).join(' ')}`}
+                  stroke="url(#arcGradient)"
+                  strokeWidth="2"
+                  strokeDasharray="3,3"
+                  fill="none"
+                  opacity="0.4"
+                />
+              )}
+              
+              {/* Aim dots along the straight line */}
               {[0.25, 0.5, 0.75].map((ratio, i) => {
                 const startX = (arenaRef.current?.getBoundingClientRect().width || 0) / 2;
                 const startY = (arenaRef.current?.getBoundingClientRect().height || 0) - 50;
@@ -935,6 +993,18 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                   />
                 );
               })}
+              
+              {/* Arc dots for visual feedback */}
+              {arcPoints.filter((_, i) => i % 5 === 0).map((point, i) => (
+                <circle
+                  key={`arc-${i}`}
+                  cx={point.x}
+                  cy={point.y}
+                  r="2"
+                  fill="rgba(139, 92, 246, 0.5)"
+                  opacity="0.4"
+                />
+              ))}
             </svg>
           </div>
         )}
