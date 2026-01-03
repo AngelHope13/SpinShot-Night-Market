@@ -17,8 +17,8 @@ export const SettingsProvider = ({ children }) => {
     soundVolume: 0.7,
     musicEnabled: true,
     musicVolume: 0.5,
-    dartTrail: 'classic', // 'classic', 'sparkle', 'glow', 'neon', 'none'
-    targetSkin: 'default', // 'default', 'kawaii', 'pixel', 'minimal', 'bubble'
+    dartTrail: 'sparkle', // 'classic', 'sparkle', 'glow', 'neon', 'none'
+    targetSkin: 'ghibli', // 'default', 'kawaii', 'pixel', 'minimal', 'bubble', 'ghibli'
     crosshair: 'default', // 'default', 'dot', 'cross', 'circle'
   });
 
