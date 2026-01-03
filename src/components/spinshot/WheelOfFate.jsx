@@ -148,39 +148,56 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
             <circle cx="50" cy="50" r="8" fill="#4f46e5" />
           </svg>
           
-          {/* Render Ghibli-style icon overlays */}
+          {/* Render icon overlays that stay upright */}
           {WHEEL_EFFECTS.map((effect, i) => {
             const iconAngle = (i * SEGMENT_ANGLE - 90 + SEGMENT_ANGLE / 2) * (Math.PI / 180);
             const iconX = 50 + 32 * Math.cos(iconAngle);
             const iconY = 50 + 32 * Math.sin(iconAngle);
             const GhibliIcon = effect.ghibliIcon;
-            
+
             return (
               <motion.div
                 key={`icon-${effect.id}`}
-                className="absolute"
+                className="absolute flex flex-col items-center gap-1"
                 style={{
                   left: `${iconX}%`,
                   top: `${iconY}%`,
-                  transform: `translate(-50%, -50%) rotate(${(i * SEGMENT_ANGLE + SEGMENT_ANGLE / 2)}deg)`,
                 }}
                 animate={{
-                  scale: [1, 1.1, 1],
+                  x: '-50%',
+                  y: '-50%',
+                  rotate: -rotation,
                 }}
                 transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                  ease: "easeInOut"
+                  rotate: { duration: 4, ease: [0.2, 0.8, 0.2, 1] }
                 }}
               >
-                <div 
+                <motion.div 
                   className="relative"
+                  animate={{
+                    scale: [1, 1.15, 1],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                    ease: "easeInOut"
+                  }}
                   style={{
-                    filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4)) drop-shadow(0 0 12px rgba(255,255,255,0.3))',
+                    filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 15px rgba(255,255,255,0.4))',
                   }}
                 >
                   <GhibliIcon className="w-11 h-11" />
+                </motion.div>
+                <div 
+                  className="text-white font-bold text-xs whitespace-nowrap px-2 py-0.5 rounded-full"
+                  style={{
+                    backgroundColor: `${effect.color}80`,
+                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                    border: `1px solid ${effect.color}`,
+                  }}
+                >
+                  {effect.name}
                 </div>
               </motion.div>
             );
