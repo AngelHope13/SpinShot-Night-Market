@@ -60,8 +60,9 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [dartTrails, setDartTrails] = useState([]);
   const [impactWaves, setImpactWaves] = useState([]);
   const [projectiles, setProjectiles] = useState([]);
+  const [aimPosition, setAimPosition] = useState(null);
   const arenaRef = useRef(null);
-  const projectileSpeed = 15; // pixels per frame
+  const projectileSpeed = 20; // pixels per frame (increased for better accuracy)
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
   const { settings } = useSettings();
@@ -345,10 +346,10 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     const distance = Math.sqrt(
       Math.pow(projX - target.x, 2) + Math.pow(projY - target.y, 2)
     );
-    return distance < (target.size / 2 + 10); // 10px collision buffer
+    return distance < (target.size / 2 + 15); // 15px collision buffer for better accuracy
   }, []);
 
-  const handleProjectileHit = useCallback((projectile, target) => {
+  const handleProjectileHit = useCallback((projectile, hitTargets) => {
     // Create impact wave
     setImpactWaves(prev => [...prev, {
       id: Date.now(),
@@ -357,60 +358,54 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     }]);
     setTimeout(() => setImpactWaves(prev => prev.slice(1)), 600);
 
-    // Rubber darts = no score
-    if (wheelEffect?.id === 'rubber') {
-      createParticles(projectile.x, projectile.y, '#ef4444', 8);
-      setHitEffects(prev => [...prev, { id: Date.now(), x: projectile.x, y: projectile.y, text: 'BOUNCE!', color: '#ef4444' }]);
-      setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
-      return;
-    }
+    let totalPoints = 0;
+    const targetIds = [];
+    const splitTargetsToAdd = [];
 
-    // Trap target - penalty!
-    if (target.isTrap) {
-      sounds.targetMiss();
-      triggerScreenShake(2);
-      createParticles(projectile.x, projectile.y, '#dc2626', 20);
-      setDarts(prev => Math.max(0, prev - 2));
-      setRoundScore(prev => Math.max(0, prev - 50));
-      setTargets(prev => prev.filter(t => t.id !== target.id));
-      setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
-      setHitEffects(prev => [...prev, { 
-        id: Date.now(), 
-        x: projectile.x, 
-        y: projectile.y, 
-        text: '-50 💀',
-        color: '#dc2626'
-      }]);
-      return;
-    }
+    hitTargets.forEach(target => {
 
-    // Lucky aim = bonus points
-    const luckyBonus = wheelEffect?.id === 'lucky' ? 1.5 : 1;
-    const points = Math.round(target.points * getScoreMultiplier() * luckyBonus);
-    
-    sounds.targetHit(points);
-    setRoundScore(prev => prev + points);
-    setScoreAnimation(Date.now());
-    
-    // Screen shake for high value targets
-    if (points >= 300) triggerScreenShake(3);
-    else if (points >= 150) triggerScreenShake(1.5);
-    
-    // Particle colors based on target type
-    let particleColor = '#4ade80';
-    if (target.type === 'luckycat') particleColor = '#ffd93d';
-    else if (target.splits) particleColor = '#a855f7';
-    else if (target.type === 'stinkytofu') particleColor = '#22c55e';
-    
-    createParticles(projectile.x, projectile.y, particleColor, points >= 200 ? 25 : 15);
-    setTargets(prev => prev.filter(t => t.id !== target.id));
-    setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
-    
-    // Split target - create smaller targets
-    if (target.splits) {
-      const arena = arenaRef.current;
-      if (arena) {
-        const smallTargets = [
+      // Rubber darts = no score
+      if (wheelEffect?.id === 'rubber') {
+        createParticles(projectile.x, projectile.y, '#ef4444', 8);
+        return;
+      }
+
+      // Trap target - penalty!
+      if (target.isTrap) {
+        sounds.targetMiss();
+        triggerScreenShake(2);
+        createParticles(projectile.x, projectile.y, '#dc2626', 20);
+        setDarts(prev => Math.max(0, prev - 2));
+        setRoundScore(prev => Math.max(0, prev - 50));
+        targetIds.push(target.id);
+        setHitEffects(prev => [...prev, { 
+          id: Date.now() + Math.random(), 
+          x: projectile.x, 
+          y: projectile.y, 
+          text: '-50 💀',
+          color: '#dc2626'
+        }]);
+        return;
+      }
+
+      // Lucky aim = bonus points
+      const luckyBonus = wheelEffect?.id === 'lucky' ? 1.5 : 1;
+      const points = Math.round(target.points * getScoreMultiplier() * luckyBonus);
+      
+      totalPoints += points;
+      targetIds.push(target.id);
+      
+      // Particle colors based on target type
+      let particleColor = '#4ade80';
+      if (target.type === 'luckycat') particleColor = '#ffd93d';
+      else if (target.splits) particleColor = '#a855f7';
+      else if (target.type === 'stinkytofu') particleColor = '#22c55e';
+      
+      createParticles(projectile.x, projectile.y, particleColor, points >= 200 ? 25 : 15);
+      
+      // Split target - create smaller targets
+      if (target.splits) {
+        splitTargetsToAdd.push(
           {
             id: Date.now() + Math.random(),
             type: 'milktea',
@@ -440,20 +435,59 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
             pauseTimer: 0,
             movePattern: 'normal',
             patternTime: 0,
-          },
-        ];
-        setTargets(prev => [...prev, ...smallTargets]);
+          }
+        );
+      }
+      
+      setHitEffects(prev => [...prev, { 
+        id: Date.now() + Math.random(), 
+        x: projectile.x, 
+        y: projectile.y, 
+        text: target.splits ? `+${points} SPLIT!` : `+${points}`,
+        color: target.type === 'luckycat' ? '#ffd93d' : target.splits ? '#a855f7' : '#4ade80',
+        isLarge: points >= 200
+      }]);
+    });
+
+    // Handle rubber dart bounce effect
+    if (wheelEffect?.id === 'rubber') {
+      setHitEffects(prev => [...prev, { 
+        id: Date.now(), 
+        x: projectile.x, 
+        y: projectile.y, 
+        text: 'BOUNCE!', 
+        color: '#ef4444' 
+      }]);
+      setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
+      return;
+    }
+
+    // Update score and remove projectile
+    if (totalPoints > 0) {
+      sounds.targetHit(totalPoints);
+      setRoundScore(prev => prev + totalPoints);
+      setScoreAnimation(Date.now());
+      
+      // Screen shake for high value
+      if (totalPoints >= 300) triggerScreenShake(3);
+      else if (totalPoints >= 150) triggerScreenShake(1.5);
+
+      // Multi-hit bonus text
+      if (hitTargets.length > 1) {
+        setHitEffects(prev => [...prev, { 
+          id: Date.now(), 
+          x: projectile.x, 
+          y: projectile.y - 30, 
+          text: `${hitTargets.length}x COMBO!`,
+          color: '#ffd93d',
+          isLarge: true
+        }]);
       }
     }
-    
-    setHitEffects(prev => [...prev, { 
-      id: Date.now(), 
-      x: projectile.x, 
-      y: projectile.y, 
-      text: target.splits ? `+${points} SPLIT!` : `+${points}`,
-      color: target.type === 'luckycat' ? '#ffd93d' : target.splits ? '#a855f7' : '#4ade80',
-      isLarge: points >= 200
-    }]);
+
+    // Remove hit targets and add split targets
+    setTargets(prev => [...prev.filter(t => !targetIds.includes(t.id)), ...splitTargetsToAdd]);
+    setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
   }, [wheelEffect, sounds, createParticles, triggerScreenShake, getScoreMultiplier]);
 
   const handleTargetClick = useCallback((target, e) => {
@@ -484,6 +518,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     
     sounds.dartThrow();
     setDarts(prev => prev - 1);
+    setAimPosition(null);
     
     // Create projectile
     const newProjectile = {
@@ -500,6 +535,18 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     
     setProjectiles(prev => [...prev, newProjectile]);
   }, [darts, windOffset, sounds, projectileSpeed]);
+
+  const handleMouseMove = useCallback((e) => {
+    if (darts <= 0 || gameEndedRef.current) return;
+    
+    const rect = arenaRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    setAimPosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  }, [darts]);
 
   const handlePowerupClick = useCallback((powerup, e) => {
     e.stopPropagation();
@@ -584,16 +631,16 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
             return; // Don't add to updated array
           }
           
-          // Check collision with targets
-          let hitTarget = null;
+          // Check collision with ALL targets (multi-hit support)
+          const hitTargets = [];
           targets.forEach(target => {
             if (checkCollision(newX, newY, target)) {
-              hitTarget = target;
+              hitTargets.push(target);
             }
           });
           
-          if (hitTarget) {
-            handleProjectileHit({ ...proj, x: newX, y: newY }, hitTarget);
+          if (hitTargets.length > 0) {
+            handleProjectileHit({ ...proj, x: newX, y: newY }, hitTargets);
             return; // Don't add to updated array
           }
           
@@ -801,6 +848,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       <div 
         ref={arenaRef}
         onClick={handleMiss}
+        onMouseMove={handleMouseMove}
         className={`flex-1 relative overflow-hidden ${getCrosshairStyle()}`}
         style={{
           background: 'radial-gradient(ellipse at center, #312e81 0%, #1e1b4b 50%, #0f0d24 100%)',
@@ -847,39 +895,102 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           </div>
         )}
 
+        {/* Aiming Line */}
+        {aimPosition && darts > 0 && !gameEndedRef.current && (
+          <div className="absolute pointer-events-none">
+            <svg className="absolute inset-0 w-full h-full">
+              <defs>
+                <linearGradient id="aimGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgba(236, 72, 153, 0.8)" />
+                  <stop offset="100%" stopColor="rgba(236, 72, 153, 0.2)" />
+                </linearGradient>
+              </defs>
+              <line
+                x1={arenaRef.current?.getBoundingClientRect().width / 2}
+                y1={(arenaRef.current?.getBoundingClientRect().height || 0) - 50}
+                x2={aimPosition.x + windOffset.x}
+                y2={aimPosition.y + windOffset.y}
+                stroke="url(#aimGradient)"
+                strokeWidth="2"
+                strokeDasharray="5,5"
+                opacity="0.6"
+              />
+              {/* Aim dots along the line */}
+              {[0.25, 0.5, 0.75].map((ratio, i) => {
+                const startX = (arenaRef.current?.getBoundingClientRect().width || 0) / 2;
+                const startY = (arenaRef.current?.getBoundingClientRect().height || 0) - 50;
+                const endX = aimPosition.x + windOffset.x;
+                const endY = aimPosition.y + windOffset.y;
+                const dotX = startX + (endX - startX) * ratio;
+                const dotY = startY + (endY - startY) * ratio;
+                return (
+                  <circle
+                    key={i}
+                    cx={dotX}
+                    cy={dotY}
+                    r="3"
+                    fill="rgba(236, 72, 153, 0.8)"
+                    className="animate-pulse"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
+                );
+              })}
+            </svg>
+          </div>
+        )}
+
         {/* Flying Projectiles (Darts) */}
         <AnimatePresence>
-          {projectiles.map((proj) => (
-            <motion.div
-              key={proj.id}
-              className="absolute pointer-events-none"
-              style={{
-                left: proj.x,
-                top: proj.y,
-                width: 8,
-                height: 8,
-                marginLeft: -4,
-                marginTop: -4,
-              }}
-            >
-              {/* Dart body */}
-              <div 
-                className="w-full h-full rounded-full bg-gradient-to-r from-pink-400 to-purple-500"
+          {projectiles.map((proj) => {
+            const angle = Math.atan2(proj.vy, proj.vx) * 180 / Math.PI;
+            return (
+              <motion.div
+                key={proj.id}
+                className="absolute pointer-events-none"
                 style={{
-                  boxShadow: '0 0 15px rgba(236, 72, 153, 0.8)',
-                  transform: `rotate(${Math.atan2(proj.vy, proj.vx) * 180 / Math.PI}deg)`,
+                  left: proj.x,
+                  top: proj.y,
+                  width: 32,
+                  height: 32,
+                  marginLeft: -16,
+                  marginTop: -16,
+                  transform: `rotate(${angle}deg)`,
                 }}
-              />
-              {/* Trail effect */}
-              <div 
-                className="absolute top-1/2 right-full w-20 h-1 -translate-y-1/2"
-                style={{
-                  background: 'linear-gradient(90deg, transparent, rgba(251,207,232,0.6))',
-                  boxShadow: '0 0 8px rgba(251,207,232,0.4)',
-                }}
-              />
-            </motion.div>
-          ))}
+              >
+                {/* Dart visual */}
+                <svg viewBox="0 0 32 32" className="w-full h-full">
+                  <defs>
+                    <linearGradient id={`dartGrad-${proj.id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#ec4899" />
+                      <stop offset="100%" stopColor="#a855f7" />
+                    </linearGradient>
+                    <filter id={`dartGlow-${proj.id}`}>
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  {/* Dart tip (sharp point) */}
+                  <path d="M 2 16 L 12 16 L 16 14 L 16 18 L 12 16 Z" fill="#fbbf24" filter={`url(#dartGlow-${proj.id})`} />
+                  {/* Dart body */}
+                  <rect x="12" y="14" width="10" height="4" fill={`url(#dartGrad-${proj.id})`} filter={`url(#dartGlow-${proj.id})`} />
+                  {/* Dart fins */}
+                  <path d="M 22 12 L 28 10 L 22 14 Z" fill="#ec4899" opacity="0.8" />
+                  <path d="M 22 18 L 28 22 L 22 18 Z" fill="#a855f7" opacity="0.8" />
+                </svg>
+                {/* Trail effect */}
+                <div 
+                  className="absolute top-1/2 right-full w-24 h-1 -translate-y-1/2"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent, rgba(251,207,232,0.6), rgba(168,85,247,0.4))',
+                    boxShadow: '0 0 10px rgba(251,207,232,0.5)',
+                  }}
+                />
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
 
         {/* Impact Waves */}
