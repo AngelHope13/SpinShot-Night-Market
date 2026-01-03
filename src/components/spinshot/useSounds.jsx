@@ -54,7 +54,7 @@ export const useSounds = () => {
       audio.preload = 'auto';
       musicAudioRef.current = audio;
       
-      console.log('Background music initialized, volume:', settings.musicVolume);
+      console.log('Background music initialized, URL:', musicUrl, 'volume:', settings.musicVolume);
       
       // Try to play immediately
       audio.play().then(() => {
@@ -63,6 +63,18 @@ export const useSounds = () => {
         console.log('Music autoplay blocked - will start on first interaction:', err.message);
       });
     } else {
+      // Update the source if URL changed
+      if (musicAudioRef.current.src !== musicUrl) {
+        console.log('Music URL changed, updating from', musicAudioRef.current.src, 'to', musicUrl);
+        musicAudioRef.current.src = musicUrl;
+        musicAudioRef.current.load();
+        if (settings.musicEnabled) {
+          musicAudioRef.current.play().catch((err) => {
+            console.log('Music play failed after URL change:', err.message);
+          });
+        }
+      }
+      
       musicAudioRef.current.volume = settings.musicVolume || 0.5;
       if (musicAudioRef.current.paused && settings.musicEnabled) {
         console.log('Attempting to resume music...');
