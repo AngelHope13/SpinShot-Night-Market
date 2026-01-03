@@ -93,6 +93,8 @@ function SpinShotGame() {
     day: 'from-sky-400 via-blue-300 to-cyan-200',
     neon: 'from-purple-900 via-pink-800 to-fuchsia-900',
     sunset: 'from-orange-600 via-red-500 to-pink-600',
+    retro: 'from-purple-950 via-indigo-900 to-blue-950',
+    festival: 'from-red-900 via-orange-800 to-yellow-700',
   };
 
   return (

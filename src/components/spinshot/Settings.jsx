@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Sun, Moon, Zap, Sunset, Volume2, VolumeX, Sparkles, Circle, Square } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, Zap, Sunset, Volume2, VolumeX, Sparkles, Circle, Square, Target } from 'lucide-react';
 import { useSounds } from './useSounds';
 import { useSettings } from './useSettings';
 
@@ -9,12 +9,15 @@ const themes = [
   { id: 'day', name: 'Daytime Market', icon: Sun, gradient: 'from-sky-400 via-blue-300 to-cyan-200' },
   { id: 'neon', name: 'Neon Nights', icon: Zap, gradient: 'from-purple-900 via-pink-800 to-fuchsia-900' },
   { id: 'sunset', name: 'Sunset Fair', icon: Sunset, gradient: 'from-orange-600 via-red-500 to-pink-600' },
+  { id: 'retro', name: 'Retro Arcade', icon: Square, gradient: 'from-purple-950 via-indigo-900 to-blue-950' },
+  { id: 'festival', name: 'Lantern Festival', icon: Sparkles, gradient: 'from-red-900 via-orange-800 to-yellow-700' },
 ];
 
 const dartTrails = [
   { id: 'classic', name: 'Classic', description: 'Simple and clean' },
   { id: 'sparkle', name: 'Sparkle', description: 'Magical sparkles' },
   { id: 'glow', name: 'Glow Trail', description: 'Glowing path' },
+  { id: 'neon', name: 'Neon Glow', description: 'Bright neon streak' },
   { id: 'none', name: 'None', description: 'No trail' },
 ];
 
@@ -23,6 +26,14 @@ const targetSkins = [
   { id: 'kawaii', name: 'Kawaii', emoji: '🥰' },
   { id: 'pixel', name: 'Pixel Art', emoji: '🟦' },
   { id: 'minimal', name: 'Minimal', emoji: '⭕' },
+  { id: 'bubble', name: 'Bubble Pop', emoji: '🫧' },
+];
+
+const crosshairs = [
+  { id: 'default', name: 'Default', icon: '✕' },
+  { id: 'dot', name: 'Dot', icon: '•' },
+  { id: 'cross', name: 'Cross', icon: '+' },
+  { id: 'circle', name: 'Circle', icon: '◯' },
 ];
 
 export default function Settings({ onBack }) {
@@ -56,7 +67,7 @@ export default function Settings({ onBack }) {
             <Sparkles className="w-5 h-5 text-pink-400" />
             Background Theme
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {themes.map((theme) => (
               <motion.button
                 key={theme.id}
@@ -114,22 +125,59 @@ export default function Settings({ onBack }) {
             </motion.button>
           </div>
 
-          {/* Volume Slider */}
+          {/* Volume Sliders */}
           {settings.soundEnabled && (
-            <div>
-              <div className="flex justify-between text-purple-200 text-sm mb-2">
-                <span>Volume</span>
-                <span>{Math.round(settings.soundVolume * 100)}%</span>
+            <>
+              <div>
+                <div className="flex justify-between text-purple-200 text-sm mb-2">
+                  <span>Sound Effects</span>
+                  <span>{Math.round(settings.soundVolume * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={settings.soundVolume * 100}
+                  onChange={(e) => updateSettings({ soundVolume: e.target.value / 100 })}
+                  className="w-full h-2 bg-purple-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                />
               </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={settings.soundVolume * 100}
-                onChange={(e) => updateSettings({ soundVolume: e.target.value / 100 })}
-                className="w-full h-2 bg-purple-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
-              />
-            </div>
+              
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-purple-200 text-sm">Background Music</span>
+                  <motion.button
+                    onClick={() => updateSettings({ musicEnabled: !settings.musicEnabled })}
+                    whileTap={{ scale: 0.95 }}
+                    className={`w-12 h-6 rounded-full transition-colors relative ${
+                      settings.musicEnabled ? 'bg-green-500' : 'bg-gray-600'
+                    }`}
+                  >
+                    <motion.div
+                      className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-lg"
+                      animate={{ left: settings.musicEnabled ? '24px' : '2px' }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    />
+                  </motion.button>
+                </div>
+                {settings.musicEnabled && (
+                  <div className="flex justify-between text-purple-200 text-sm mb-2">
+                    <span>Music Volume</span>
+                    <span>{Math.round(settings.musicVolume * 100)}%</span>
+                  </div>
+                )}
+                {settings.musicEnabled && (
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={settings.musicVolume * 100}
+                    onChange={(e) => updateSettings({ musicVolume: e.target.value / 100 })}
+                    className="w-full h-2 bg-purple-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+                  />
+                )}
+              </div>
+            </>
           )}
         </motion.div>
 
@@ -178,7 +226,7 @@ export default function Settings({ onBack }) {
             <Circle className="w-5 h-5 text-pink-400" />
             Target Style
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {targetSkins.map((skin) => (
               <motion.button
                 key={skin.id}
@@ -201,11 +249,45 @@ export default function Settings({ onBack }) {
           </div>
         </motion.div>
 
-        {/* Back Button */}
+        {/* Crosshair Style */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
+          className="mb-8"
+        >
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <Target className="w-5 h-5 text-pink-400" />
+            Crosshair Style
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {crosshairs.map((crosshair) => (
+              <motion.button
+                key={crosshair.id}
+                onClick={() => {
+                  sounds.buttonClick();
+                  updateSettings({ crosshair: crosshair.id });
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`p-4 rounded-xl border-2 transition-all bg-purple-900/40 backdrop-blur ${
+                  settings.crosshair === crosshair.id
+                    ? 'border-yellow-400 shadow-lg shadow-yellow-400/30'
+                    : 'border-purple-500/30 hover:border-purple-400'
+                }`}
+              >
+                <div className="text-4xl mb-2 font-bold">{crosshair.icon}</div>
+                <div className="text-white font-semibold text-sm">{crosshair.name}</div>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Back Button */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6 }}
           className="flex justify-center"
         >
           <motion.button

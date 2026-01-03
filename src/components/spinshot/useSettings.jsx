@@ -12,11 +12,14 @@ export const useSettings = () => {
 
 export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState({
-    theme: 'night', // 'night', 'day', 'neon', 'sunset'
+    theme: 'night', // 'night', 'day', 'neon', 'sunset', 'retro', 'festival'
     soundEnabled: true,
     soundVolume: 0.7,
-    dartTrail: 'classic', // 'classic', 'sparkle', 'glow', 'none'
-    targetSkin: 'default', // 'default', 'kawaii', 'pixel', 'minimal'
+    musicEnabled: true,
+    musicVolume: 0.5,
+    dartTrail: 'classic', // 'classic', 'sparkle', 'glow', 'neon', 'none'
+    targetSkin: 'default', // 'default', 'kawaii', 'pixel', 'minimal', 'bubble'
+    crosshair: 'default', // 'default', 'dot', 'cross', 'circle'
   });
 
   // Load from localStorage

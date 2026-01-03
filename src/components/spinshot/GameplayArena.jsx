@@ -54,8 +54,19 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       kawaii: { milktea: '🥤', balloon: '🎀', stinkytofu: '😋', luckycat: '😻' },
       pixel: { milktea: '🟫', balloon: '🔴', stinkytofu: '🟢', luckycat: '🟡' },
       minimal: { milktea: '⚪', balloon: '⚫', stinkytofu: '⭕', luckycat: '✨' },
+      bubble: { milktea: '🫧', balloon: '💭', stinkytofu: '🫧', luckycat: '✨' },
     };
     return emojiMap[settings.targetSkin]?.[targetType] || emojiMap.default[targetType];
+  };
+
+  const getCrosshairStyle = () => {
+    const styles = {
+      default: 'cursor-crosshair',
+      dot: 'cursor-none',
+      cross: 'cursor-none',
+      circle: 'cursor-none',
+    };
+    return styles[settings.crosshair] || styles.default;
   };
 
   // Speed multiplier based on wheel effect
@@ -467,11 +478,38 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       <div 
         ref={arenaRef}
         onClick={handleMiss}
-        className="flex-1 relative overflow-hidden cursor-crosshair"
+        className={`flex-1 relative overflow-hidden ${getCrosshairStyle()}`}
         style={{
           background: 'radial-gradient(ellipse at center, #312e81 0%, #1e1b4b 50%, #0f0d24 100%)',
         }}
       >
+        {/* Custom Crosshair */}
+        {settings.crosshair !== 'default' && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div 
+              className="fixed w-8 h-8 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center text-2xl font-bold text-white opacity-70"
+              style={{ 
+                left: 'var(--mouse-x, 50%)', 
+                top: 'var(--mouse-y, 50%)',
+                filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.8))',
+              }}
+              ref={(el) => {
+                if (el) {
+                  const parent = el.parentElement.parentElement;
+                  parent.addEventListener('mousemove', (e) => {
+                    const rect = parent.getBoundingClientRect();
+                    el.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                    el.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                  });
+                }
+              }}
+            >
+              {settings.crosshair === 'dot' && '•'}
+              {settings.crosshair === 'cross' && '+'}
+              {settings.crosshair === 'circle' && '◯'}
+            </div>
+          </div>
+        )}
         {/* Decorative grid */}
         <div className="absolute inset-0 opacity-10" style={{
           backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)',
@@ -510,7 +548,13 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
               }}
             >
               <div className={`w-full h-full flex items-center justify-center text-4xl md:text-5xl transition-transform hover:scale-110 ${target.isPaused || activePowerups['freeze-time'] ? 'animate-bounce' : ''}`}
-                style={{ filter: activePowerups['freeze-time'] ? 'drop-shadow(0 0 15px rgba(6,182,212,0.8))' : 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}
+                style={{ 
+                  filter: activePowerups['freeze-time'] ? 'drop-shadow(0 0 15px rgba(6,182,212,0.8))' : 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
+                  ...(settings.targetSkin === 'bubble' && { 
+                    background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), transparent)',
+                    borderRadius: '50%',
+                  })
+                }}
               >
                 {getTargetEmoji(target.type)}
               </div>
