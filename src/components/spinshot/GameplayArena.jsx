@@ -6,10 +6,12 @@ import { useSettings } from './useSettings';
 import { GhibliMilktea, GhibliBalloon, GhibliStinkyTofu, GhibliLuckyCat, GhibliFortuneLantern } from './GhibliTargets';
 
 const TARGETS = [
-  { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.35, ghibliComponent: GhibliMilktea },
-  { type: 'balloon', emoji: '🎈', points: 50, size: 70, spawnChance: 0.35, ghibliComponent: GhibliBalloon },
-  { type: 'stinkytofu', emoji: '🤢', points: 150, size: 65, spawnChance: 0.2, ghibliComponent: GhibliStinkyTofu },
-  { type: 'luckycat', emoji: '🐱', points: 300, size: 65, spawnChance: 0.1, ghibliComponent: GhibliLuckyCat },
+  { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.25, ghibliComponent: GhibliMilktea },
+  { type: 'balloon', emoji: '🎈', points: 50, size: 70, spawnChance: 0.25, ghibliComponent: GhibliBalloon },
+  { type: 'stinkytofu', emoji: '🤢', points: 150, size: 65, spawnChance: 0.15, ghibliComponent: GhibliStinkyTofu, movePattern: 'zigzag' },
+  { type: 'luckycat', emoji: '🐱', points: 300, size: 65, spawnChance: 0.08, ghibliComponent: GhibliLuckyCat },
+  { type: 'splitter', emoji: '💫', points: 200, size: 70, spawnChance: 0.12, ghibliComponent: null, movePattern: 'spiral', splits: true },
+  { type: 'trap', emoji: '💀', points: -100, size: 60, spawnChance: 0.15, ghibliComponent: null, isTrap: true },
 ];
 
 const BOSS_TARGET = { 
@@ -58,19 +60,19 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const { settings } = useSettings();
 
   const renderTargetVisual = (target) => {
-    if (settings.targetSkin === 'ghibli') {
+    if (settings.targetSkin === 'ghibli' && target.ghibliComponent) {
       const Component = target.ghibliComponent;
-      return Component ? <Component /> : target.emoji;
+      return <Component />;
     }
     
     const emojiMap = {
-      default: { milktea: '🧋', balloon: '🎈', stinkytofu: '🤢', luckycat: '🐱', fortunelantern: '🏮' },
-      kawaii: { milktea: '🥤', balloon: '🎀', stinkytofu: '😋', luckycat: '😻', fortunelantern: '🎏' },
-      pixel: { milktea: '🟫', balloon: '🔴', stinkytofu: '🟢', luckycat: '🟡', fortunelantern: '🟠' },
-      minimal: { milktea: '⚪', balloon: '⚫', stinkytofu: '⭕', luckycat: '✨', fortunelantern: '⭕' },
-      bubble: { milktea: '🫧', balloon: '💭', stinkytofu: '🫧', luckycat: '✨', fortunelantern: '💭' },
+      default: { milktea: '🧋', balloon: '🎈', stinkytofu: '🤢', luckycat: '🐱', fortunelantern: '🏮', splitter: '💫', trap: '💀' },
+      kawaii: { milktea: '🥤', balloon: '🎀', stinkytofu: '😋', luckycat: '😻', fortunelantern: '🎏', splitter: '⭐', trap: '👻' },
+      pixel: { milktea: '🟫', balloon: '🔴', stinkytofu: '🟢', luckycat: '🟡', fortunelantern: '🟠', splitter: '🔵', trap: '⬛' },
+      minimal: { milktea: '⚪', balloon: '⚫', stinkytofu: '⭕', luckycat: '✨', fortunelantern: '⭕', splitter: '◆', trap: '✕' },
+      bubble: { milktea: '🫧', balloon: '💭', stinkytofu: '🫧', luckycat: '✨', fortunelantern: '💭', splitter: '🫧', trap: '💭' },
     };
-    return emojiMap[settings.targetSkin]?.[target.type] || emojiMap.default[target.type];
+    return emojiMap[settings.targetSkin]?.[target.type] || target.emoji;
   };
 
   const getCrosshairStyle = () => {
@@ -162,6 +164,8 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
         direction: { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 },
         isPaused: false,
         pauseTimer: 0,
+        movePattern: selectedTarget.movePattern || 'normal',
+        patternTime: 0,
       };
 
       setTargets(prev => [...prev.slice(-7), newTarget]);
@@ -228,9 +232,25 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           return { ...target, isPaused: true, pauseTimer: Date.now() };
         }
 
-        let newX = target.x + target.direction.x * speed;
-        let newY = target.y + target.direction.y * speed;
+        let newX = target.x;
+        let newY = target.y;
         let newDir = { ...target.direction };
+        const patternTime = (target.patternTime || 0) + 0.05;
+
+        // Apply movement patterns
+        if (target.movePattern === 'zigzag') {
+          const zigzagOffset = Math.sin(patternTime * 3) * 15;
+          newX = target.x + target.direction.x * speed + zigzagOffset;
+          newY = target.y + target.direction.y * speed;
+        } else if (target.movePattern === 'spiral') {
+          const spiralRadius = 3;
+          const spiralSpeed = 2;
+          newX = target.x + target.direction.x * speed + Math.cos(patternTime * spiralSpeed) * spiralRadius;
+          newY = target.y + target.direction.y * speed + Math.sin(patternTime * spiralSpeed) * spiralRadius;
+        } else {
+          newX = target.x + target.direction.x * speed;
+          newY = target.y + target.direction.y * speed;
+        }
 
         const padding = 40;
         if (newX < padding || newX > rect.width - padding) {
@@ -242,7 +262,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           newY = Math.max(padding, Math.min(rect.height - padding, newY));
         }
 
-        return { ...target, x: newX, y: newY, direction: newDir };
+        return { ...target, x: newX, y: newY, direction: newDir, patternTime };
       }));
     };
 
@@ -308,6 +328,22 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       return;
     }
 
+    // Trap target - penalty!
+    if (target.isTrap) {
+      sounds.targetMiss();
+      setDarts(prev => Math.max(0, prev - 2)); // Lose 2 extra darts
+      setRoundScore(prev => Math.max(0, prev - 50)); // Lose 50 points
+      setTargets(prev => prev.filter(t => t.id !== target.id));
+      setHitEffects(prev => [...prev, { 
+        id: Date.now(), 
+        x: target.x, 
+        y: target.y, 
+        text: '-50 💀',
+        color: '#dc2626'
+      }]);
+      return;
+    }
+
     // Lucky aim = bonus points
     const luckyBonus = wheelEffect?.id === 'lucky' ? 1.5 : 1;
     const points = Math.round(target.points * getScoreMultiplier() * luckyBonus);
@@ -316,12 +352,52 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     setRoundScore(prev => prev + points);
     setTargets(prev => prev.filter(t => t.id !== target.id));
     
+    // Split target - create smaller targets
+    if (target.splits) {
+      const arena = arenaRef.current;
+      if (arena) {
+        const smallTargets = [
+          {
+            id: Date.now() + Math.random(),
+            type: 'milktea',
+            emoji: '🧋',
+            points: 50,
+            size: 40,
+            ghibliComponent: GhibliMilktea,
+            x: target.x - 30,
+            y: target.y - 30,
+            direction: { x: -1.5, y: -1.5 },
+            isPaused: false,
+            pauseTimer: 0,
+            movePattern: 'normal',
+            patternTime: 0,
+          },
+          {
+            id: Date.now() + Math.random() + 0.1,
+            type: 'balloon',
+            emoji: '🎈',
+            points: 50,
+            size: 40,
+            ghibliComponent: GhibliBalloon,
+            x: target.x + 30,
+            y: target.y - 30,
+            direction: { x: 1.5, y: -1.5 },
+            isPaused: false,
+            pauseTimer: 0,
+            movePattern: 'normal',
+            patternTime: 0,
+          },
+        ];
+        setTargets(prev => [...prev, ...smallTargets]);
+      }
+    }
+    
     setHitEffects(prev => [...prev, { 
       id: Date.now(), 
       x: target.x, 
       y: target.y, 
-      text: `+${points}`,
-      color: target.type === 'luckycat' ? '#ffd93d' : '#4ade80'
+      text: target.splits ? `+${points} SPLIT!` : `+${points}`,
+      color: target.type === 'luckycat' ? '#ffd93d' : target.splits ? '#a855f7' : '#4ade80'
     }]);
   }, [darts, wheelEffect, sounds]);
 
@@ -587,11 +663,19 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                 marginTop: -target.size / 2,
               }}
             >
-              <div className={`w-full h-full flex items-center justify-center transition-transform hover:scale-110 ${target.isPaused || activePowerups['freeze-time'] ? 'animate-bounce' : ''} ${settings.targetSkin === 'ghibli' ? '' : 'text-4xl md:text-5xl'}`}
+              <div className={`w-full h-full flex items-center justify-center transition-transform hover:scale-110 ${target.isPaused || activePowerups['freeze-time'] ? 'animate-bounce' : ''} ${settings.targetSkin === 'ghibli' ? '' : 'text-4xl md:text-5xl'} ${target.isTrap ? 'animate-pulse' : ''}`}
                 style={{ 
-                  filter: activePowerups['freeze-time'] ? 'drop-shadow(0 0 15px rgba(6,182,212,0.8))' : 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
+                  filter: activePowerups['freeze-time'] ? 'drop-shadow(0 0 15px rgba(6,182,212,0.8))' : target.isTrap ? 'drop-shadow(0 0 15px rgba(220,38,38,0.8))' : 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
                   ...(settings.targetSkin === 'bubble' && { 
                     background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), transparent)',
+                    borderRadius: '50%',
+                  }),
+                  ...(target.isTrap && {
+                    background: 'radial-gradient(circle, rgba(220,38,38,0.3), transparent)',
+                    borderRadius: '50%',
+                  }),
+                  ...(target.splits && {
+                    background: 'radial-gradient(circle, rgba(168,85,247,0.2), transparent)',
                     borderRadius: '50%',
                   })
                 }}
