@@ -271,41 +271,60 @@ export const useSounds = () => {
     const settings = settingsContextRef.current?.settings;
     if (!ctx || (settings && !settings.soundEnabled)) return;
 
-    const volume = (settings?.soundVolume || 0.7) * 0.16;
+    const volume = (settings?.soundVolume || 0.7) * 0.18;
     
-    // Mechanical spin with doppler effect
-    const spin1 = ctx.createOscillator();
-    const spin2 = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const filter = ctx.createBiquadFilter();
+    // Exciting accelerating ratchet sound
+    const duration = 2.0;
     
-    spin1.type = 'sawtooth';
-    spin2.type = 'square';
-    filter.type = 'lowpass';
+    // Multiple layers for richness
+    for (let i = 0; i < 3; i++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      
+      osc.type = i === 0 ? 'sawtooth' : i === 1 ? 'triangle' : 'square';
+      filter.type = 'bandpass';
+      filter.Q.value = 5;
+      
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      
+      const baseFreq = 150 + (i * 50);
+      osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 5, ctx.currentTime + duration * 0.8);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 8, ctx.currentTime + duration);
+      
+      filter.frequency.setValueAtTime(600 + (i * 200), ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(2500, ctx.currentTime + duration);
+      
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(volume * (1 - i * 0.2), ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(volume * (1 - i * 0.2), ctx.currentTime + duration * 0.85);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+      
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + duration);
+    }
     
-    spin1.connect(gain);
-    spin2.connect(gain);
-    gain.connect(filter);
-    filter.connect(ctx.destination);
-    
-    spin1.frequency.setValueAtTime(180, ctx.currentTime);
-    spin1.frequency.exponentialRampToValueAtTime(700, ctx.currentTime + 1.5);
-    
-    spin2.frequency.setValueAtTime(90, ctx.currentTime);
-    spin2.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + 1.5);
-    
-    filter.frequency.setValueAtTime(800, ctx.currentTime);
-    filter.frequency.linearRampToValueAtTime(2000, ctx.currentTime + 1.5);
-    
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.15);
-    gain.gain.setValueAtTime(volume, ctx.currentTime + 1.3);
-    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 1.8);
-    
-    spin1.start(ctx.currentTime);
-    spin2.start(ctx.currentTime);
-    spin1.stop(ctx.currentTime + 1.8);
-    spin2.stop(ctx.currentTime + 1.8);
+    // Add clicking/ticking for mechanical feel
+    for (let i = 0; i < 25; i++) {
+      const delay = i * 0.08 * Math.pow(0.9, i / 5);
+      const click = ctx.createOscillator();
+      const clickGain = ctx.createGain();
+      
+      click.type = 'square';
+      click.frequency.value = 2000 + (i * 30);
+      click.connect(clickGain);
+      clickGain.connect(ctx.destination);
+      
+      const startTime = ctx.currentTime + delay;
+      clickGain.gain.setValueAtTime(volume * 0.3, startTime);
+      clickGain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.02);
+      
+      click.start(startTime);
+      click.stop(startTime + 0.02);
+    }
   }, []);
 
   const wheelStop = useCallback(() => {
@@ -313,43 +332,74 @@ export const useSounds = () => {
     const settings = settingsContextRef.current?.settings;
     if (!ctx || (settings && !settings.soundEnabled)) return;
 
-    const volume = (settings?.soundVolume || 0.7) * 0.28;
+    const volume = (settings?.soundVolume || 0.7) * 0.32;
 
-    // Mechanical clunk
-    const clunk = ctx.createOscillator();
+    // Heavy mechanical CLUNK with resonance
+    const clunk1 = ctx.createOscillator();
+    const clunk2 = ctx.createOscillator();
     const clunkGain = ctx.createGain();
-    clunk.connect(clunkGain);
+    const clunkFilter = ctx.createBiquadFilter();
+    
+    clunk1.type = 'sine';
+    clunk2.type = 'triangle';
+    clunkFilter.type = 'lowpass';
+    clunkFilter.frequency.value = 250;
+    
+    clunk1.frequency.value = 80;
+    clunk2.frequency.value = 120;
+    
+    clunk1.connect(clunkFilter);
+    clunk2.connect(clunkFilter);
+    clunkFilter.connect(clunkGain);
     clunkGain.connect(ctx.destination);
-    clunk.type = 'sine';
-    clunk.frequency.value = 120;
-    clunkGain.gain.setValueAtTime(volume * 0.7, ctx.currentTime);
-    clunkGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-    clunk.start(ctx.currentTime);
-    clunk.stop(ctx.currentTime + 0.1);
+    
+    clunkGain.gain.setValueAtTime(volume, ctx.currentTime);
+    clunkGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    
+    clunk1.start(ctx.currentTime);
+    clunk2.start(ctx.currentTime);
+    clunk1.stop(ctx.currentTime + 0.15);
+    clunk2.stop(ctx.currentTime + 0.15);
 
-    // Magical shimmer cascade
-    [1000, 1300, 1650, 2100].forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-      
-      osc.type = 'sine';
-      filter.type = 'bandpass';
-      filter.frequency.value = freq;
-      filter.Q.value = 8;
-      
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = freq;
-      
-      const startTime = ctx.currentTime + 0.08 + (i * 0.04);
-      gain.gain.setValueAtTime(volume * (1 - i * 0.12), startTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.35);
+    // Dramatic "ding" with reverb-like tail
+    setTimeout(() => {
+      [1200, 1800, 2400, 3000].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        
+        osc.type = 'sine';
+        filter.type = 'bandpass';
+        filter.frequency.value = freq;
+        filter.Q.value = 12;
+        
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        
+        const startTime = ctx.currentTime + (i * 0.03);
+        gain.gain.setValueAtTime(volume * (1 - i * 0.1), startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
 
-      osc.start(startTime);
-      osc.stop(startTime + 0.35);
-    });
+        osc.start(startTime);
+        osc.stop(startTime + 0.5);
+      });
+    }, 80);
+
+    // Final resonant ping
+    setTimeout(() => {
+      const ping = ctx.createOscillator();
+      const pingGain = ctx.createGain();
+      ping.connect(pingGain);
+      pingGain.connect(ctx.destination);
+      ping.type = 'sine';
+      ping.frequency.value = 1500;
+      pingGain.gain.setValueAtTime(volume * 0.4, ctx.currentTime);
+      pingGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      ping.start(ctx.currentTime);
+      ping.stop(ctx.currentTime + 0.6);
+    }, 200);
   }, []);
 
   const levelComplete = useCallback(() => {
