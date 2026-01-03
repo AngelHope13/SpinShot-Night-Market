@@ -69,7 +69,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [aimPosition, setAimPosition] = useState(null);
   const [arcPoints, setArcPoints] = useState([]);
   const arenaRef = useRef(null);
-  const projectileSpeed = 200; // pixels per frame - super fast!
+  const projectileSpeed = 15; // pixels per frame - smooth and accurate
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
   const { settings } = useSettings();
@@ -361,7 +361,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     const distance = Math.sqrt(
       Math.pow(projX - target.x, 2) + Math.pow(projY - target.y, 2)
     );
-    return distance < (target.size / 2 + 15); // 15px collision buffer for better accuracy
+    return distance < (target.size / 2 + 25); // 25px collision buffer for forgiving hits
   }, []);
 
   const handleProjectileHit = useCallback((projectile, hitTargets) => {
@@ -823,21 +823,8 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           // Move projectile
           const newX = proj.x + proj.vx;
           const newY = proj.y + proj.vy;
-          const newDistance = proj.distanceTraveled + projectileSpeed;
-          
-          // Check if projectile reached destination or went off screen
-          if (newDistance >= proj.maxDistance || newX < 0 || newX > window.innerWidth || newY < 0 || newY > window.innerHeight) {
-            // Projectile missed
-            sounds.targetMiss();
-            setHitEffects(prev => [...prev, { 
-              id: Date.now(), 
-              x: proj.targetX, 
-              y: proj.targetY, 
-              text: 'MISS', 
-              color: '#ef4444' 
-            }]);
-            return; // Don't add to updated array
-          }
+          const distanceThisFrame = Math.sqrt(proj.vx * proj.vx + proj.vy * proj.vy);
+          const newDistance = proj.distanceTraveled + distanceThisFrame;
           
           // Check collision with ALL targets (multi-hit support)
           const hitTargets = [];
@@ -849,6 +836,21 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           
           if (hitTargets.length > 0) {
             handleProjectileHit({ ...proj, x: newX, y: newY }, hitTargets);
+            return; // Don't add to updated array
+          }
+          
+          // Check if projectile reached destination or went off screen
+          const rect = arenaRef.current?.getBoundingClientRect();
+          if (newDistance >= proj.maxDistance || !rect || newX < 0 || newX > rect.width || newY < 0 || newY > rect.height) {
+            // Projectile missed
+            sounds.targetMiss();
+            setHitEffects(prev => [...prev, { 
+              id: Date.now(), 
+              x: newX, 
+              y: newY, 
+              text: 'MISS', 
+              color: '#ef4444' 
+            }]);
             return; // Don't add to updated array
           }
           
