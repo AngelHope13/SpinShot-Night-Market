@@ -1,16 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Sparkles, Zap, Wind, Target, Gauge, Clock, XCircle, Frown } from 'lucide-react';
+import { 
+  GhibliSparkle, 
+  GhibliLightning, 
+  GhibliWind, 
+  GhibliTarget, 
+  GhibliGauge, 
+  GhibliClock, 
+  GhibliCross, 
+  GhibliSmell 
+} from './GhibliIcons';
 
 const WHEEL_EFFECTS = [
-  { id: 'x2', name: 'x2 Multiplier', description: 'Score is doubled this round', icon: Sparkles, color: '#ffd93d', type: 'buff', emoji: '✨' },
-  { id: 'x3', name: 'x3 Multiplier', description: 'Score is tripled this round', icon: Zap, color: '#ff6b9d', type: 'buff', emoji: '⚡' },
-  { id: 'windy', name: 'Windy Aim', description: 'Darts drift sideways slightly', icon: Wind, color: '#6bcbff', type: 'neutral', emoji: '💨' },
-  { id: 'lucky', name: 'Lucky Aim', description: 'Increased accuracy', icon: Target, color: '#4ade80', type: 'buff', emoji: '🎯' },
-  { id: 'chaos', name: 'Chaos Speed', description: 'Targets move faster', icon: Gauge, color: '#f97316', type: 'curse', emoji: '⚡' },
-  { id: 'slow', name: 'Slow Motion', description: 'Targets move slower', icon: Clock, color: '#a78bfa', type: 'buff', emoji: '🕐' },
-  { id: 'rubber', name: 'Rubber Darts', description: 'Hits do not score', icon: XCircle, color: '#ef4444', type: 'curse', emoji: '❌' },
-  { id: 'stinky', name: 'Stinky Curse', description: 'Targets pause less frequently', icon: Frown, color: '#84cc16', type: 'curse', emoji: '🤢' },
+  { id: 'x2', name: 'x2 Multiplier', description: 'Score is doubled this round', icon: Sparkles, ghibliIcon: GhibliSparkle, color: '#ffd93d', type: 'buff' },
+  { id: 'x3', name: 'x3 Multiplier', description: 'Score is tripled this round', icon: Zap, ghibliIcon: GhibliLightning, color: '#ff6b9d', type: 'buff' },
+  { id: 'windy', name: 'Windy Aim', description: 'Darts drift sideways slightly', icon: Wind, ghibliIcon: GhibliWind, color: '#6bcbff', type: 'neutral' },
+  { id: 'lucky', name: 'Lucky Aim', description: 'Increased accuracy', icon: Target, ghibliIcon: GhibliTarget, color: '#4ade80', type: 'buff' },
+  { id: 'chaos', name: 'Chaos Speed', description: 'Targets move faster', icon: Gauge, ghibliIcon: GhibliGauge, color: '#f97316', type: 'curse' },
+  { id: 'slow', name: 'Slow Motion', description: 'Targets move slower', icon: Clock, ghibliIcon: GhibliClock, color: '#a78bfa', type: 'buff' },
+  { id: 'rubber', name: 'Rubber Darts', description: 'Hits do not score', icon: XCircle, ghibliIcon: GhibliCross, color: '#ef4444', type: 'curse' },
+  { id: 'stinky', name: 'Stinky Curse', description: 'Targets pause less frequently', icon: Frown, ghibliIcon: GhibliSmell, color: '#84cc16', type: 'curse' },
 ];
 
 const SEGMENT_ANGLE = 360 / WHEEL_EFFECTS.length;
@@ -134,15 +144,15 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
             <circle cx="50" cy="50" r="8" fill="#4f46e5" />
           </svg>
           
-          {/* Render icon overlays with Ghibli-style effects */}
+          {/* Render Ghibli-style icon overlays */}
           {WHEEL_EFFECTS.map((effect, i) => {
             const iconAngle = (i * SEGMENT_ANGLE - 90 + SEGMENT_ANGLE / 2) * (Math.PI / 180);
             const iconX = 50 + 32 * Math.cos(iconAngle);
             const iconY = 50 + 32 * Math.sin(iconAngle);
-            const Icon = effect.icon;
+            const GhibliIcon = effect.ghibliIcon;
             
             return (
-              <div
+              <motion.div
                 key={`icon-${effect.id}`}
                 className="absolute"
                 style={{
@@ -150,22 +160,25 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
                   top: `${iconY}%`,
                   transform: `translate(-50%, -50%) rotate(${(i * SEGMENT_ANGLE + SEGMENT_ANGLE / 2)}deg)`,
                 }}
+                animate={{
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                  ease: "easeInOut"
+                }}
               >
                 <div 
                   className="relative"
                   style={{
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3)) drop-shadow(0 0 8px rgba(255,255,255,0.4))',
+                    filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4)) drop-shadow(0 0 12px rgba(255,255,255,0.3))',
                   }}
                 >
-                  <Icon 
-                    className="w-6 h-6 text-white"
-                    strokeWidth={2.5}
-                    style={{
-                      filter: 'drop-shadow(0 1px 2px rgba(30,27,75,0.5))',
-                    }}
-                  />
+                  <GhibliIcon className="w-7 h-7" />
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </motion.div>
