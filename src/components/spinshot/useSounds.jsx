@@ -33,8 +33,8 @@ export const useSounds = () => {
   useEffect(() => {
     const settings = settingsContextRef.current?.settings;
 
-    // Background music URL - using a free upbeat track
-    const musicUrl = 'https://cdn.pixabay.com/audio/2022/03/10/audio_4f87ba0f02.mp3';
+    // Background music URL - using a reliable upbeat arcade-style track
+    const musicUrl = 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3';
 
     if (!settings?.musicEnabled) {
       if (musicAudioRef.current) {
@@ -51,14 +51,23 @@ export const useSounds = () => {
       audio.preload = 'auto';
       musicAudioRef.current = audio;
       
+      console.log('Background music initialized, volume:', settings.musicVolume);
+      
       // Try to play immediately
-      audio.play().catch(() => {
-        console.log('Music autoplay blocked - will start on first click');
+      audio.play().then(() => {
+        console.log('Music started playing');
+      }).catch((err) => {
+        console.log('Music autoplay blocked - will start on first interaction:', err.message);
       });
     } else {
       musicAudioRef.current.volume = settings.musicVolume || 0.5;
       if (musicAudioRef.current.paused && settings.musicEnabled) {
-        musicAudioRef.current.play().catch(() => {});
+        console.log('Attempting to resume music...');
+        musicAudioRef.current.play().then(() => {
+          console.log('Music resumed');
+        }).catch((err) => {
+          console.log('Music play failed:', err.message);
+        });
       }
     }
   }, [settingsContextRef.current?.settings?.musicEnabled, settingsContextRef.current?.settings?.musicVolume]);
@@ -89,6 +98,7 @@ export const useSounds = () => {
   const dartThrow = useCallback(() => {
     // Try to start music on any user interaction
     if (musicAudioRef.current && musicAudioRef.current.paused && settingsContextRef.current?.settings?.musicEnabled) {
+      console.log('Starting music from dart throw...');
       musicAudioRef.current.play().catch(() => {});
     }
     
@@ -242,7 +252,12 @@ export const useSounds = () => {
     
     // Try to start background music on first user interaction
     if (musicAudioRef.current && musicAudioRef.current.paused && settings?.musicEnabled) {
-      musicAudioRef.current.play().catch(() => {});
+      console.log('Starting music from button click...');
+      musicAudioRef.current.play().then(() => {
+        console.log('Music started successfully from button click!');
+      }).catch((err) => {
+        console.error('Failed to start music from button:', err);
+      });
     }
     
     if (!ctx || (settings && !settings.soundEnabled)) return;
