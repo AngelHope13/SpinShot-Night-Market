@@ -69,7 +69,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [aimPosition, setAimPosition] = useState(null);
   const [arcPoints, setArcPoints] = useState([]);
   const arenaRef = useRef(null);
-  const projectileSpeed = 150; // pixels per frame - fast response for long shots
+  const projectileSpeed = 300; // pixels per frame - instant response
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
   const { settings } = useSettings();
@@ -864,11 +864,11 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
         });
         
         return updated;
-      });
-    }, 16);
-    
-    return () => clearInterval(interval);
-  }, [projectiles.length, targets, checkCollision, handleProjectileHit, sounds]);
+        });
+        }, 8);
+
+        return () => clearInterval(interval);
+        }, [projectiles.length, targets, checkCollision, handleProjectileHit, sounds]);
 
   // Particle physics
   useEffect(() => {
