@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Sparkles, Zap, Wind, Target, Gauge, Clock, XCircle, Frown } from 'lucide-react';
 
 const WHEEL_EFFECTS = [
-  { id: 'x2', name: 'x2 Multiplier', description: 'Score is doubled this round', icon: Sparkles, color: '#ffd93d', type: 'buff' },
-  { id: 'x3', name: 'x3 Multiplier', description: 'Score is tripled this round', icon: Zap, color: '#ff6b9d', type: 'buff' },
-  { id: 'windy', name: 'Windy Aim', description: 'Darts drift sideways slightly', icon: Wind, color: '#6bcbff', type: 'neutral' },
-  { id: 'lucky', name: 'Lucky Aim', description: 'Increased accuracy', icon: Target, color: '#4ade80', type: 'buff' },
-  { id: 'chaos', name: 'Chaos Speed', description: 'Targets move faster', icon: Gauge, color: '#f97316', type: 'curse' },
-  { id: 'slow', name: 'Slow Motion', description: 'Targets move slower', icon: Clock, color: '#a78bfa', type: 'buff' },
-  { id: 'rubber', name: 'Rubber Darts', description: 'Hits do not score', icon: XCircle, color: '#ef4444', type: 'curse' },
-  { id: 'stinky', name: 'Stinky Curse', description: 'Targets pause less frequently', icon: Frown, color: '#84cc16', type: 'curse' },
+  { id: 'x2', name: 'x2 Multiplier', description: 'Score is doubled this round', icon: Sparkles, color: '#ffd93d', type: 'buff', emoji: '✨' },
+  { id: 'x3', name: 'x3 Multiplier', description: 'Score is tripled this round', icon: Zap, color: '#ff6b9d', type: 'buff', emoji: '⚡' },
+  { id: 'windy', name: 'Windy Aim', description: 'Darts drift sideways slightly', icon: Wind, color: '#6bcbff', type: 'neutral', emoji: '💨' },
+  { id: 'lucky', name: 'Lucky Aim', description: 'Increased accuracy', icon: Target, color: '#4ade80', type: 'buff', emoji: '🎯' },
+  { id: 'chaos', name: 'Chaos Speed', description: 'Targets move faster', icon: Gauge, color: '#f97316', type: 'curse', emoji: '⚡' },
+  { id: 'slow', name: 'Slow Motion', description: 'Targets move slower', icon: Clock, color: '#a78bfa', type: 'buff', emoji: '🕐' },
+  { id: 'rubber', name: 'Rubber Darts', description: 'Hits do not score', icon: XCircle, color: '#ef4444', type: 'curse', emoji: '❌' },
+  { id: 'stinky', name: 'Stinky Curse', description: 'Targets pause less frequently', icon: Frown, color: '#84cc16', type: 'curse', emoji: '🤢' },
 ];
 
 const SEGMENT_ANGLE = 360 / WHEEL_EFFECTS.length;
@@ -123,11 +123,12 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
                     y={iconY}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fontSize="8"
+                    fontSize="10"
                     transform={`rotate(${iconAngle + 90}, ${iconX}, ${iconY})`}
-                    className="fill-white font-bold"
+                    className="select-none"
+                    style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}
                   >
-                    {effect.id === 'x2' ? '×2' : effect.id === 'x3' ? '×3' : '●'}
+                    {effect.emoji}
                   </text>
                 </g>
               );
