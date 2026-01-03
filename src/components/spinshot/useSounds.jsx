@@ -1,7 +1,16 @@
 import { useCallback, useRef, useEffect } from 'react';
+import { useSettings } from './useSettings';
 
 export const useSounds = () => {
   const audioContextRef = useRef(null);
+  const settingsContextRef = useRef(null);
+
+  // Try to get settings, but don't fail if not available
+  try {
+    settingsContextRef.current = useSettings();
+  } catch (e) {
+    // Settings context not available
+  }
 
   useEffect(() => {
     // Initialize AudioContext on mount
@@ -16,7 +25,10 @@ export const useSounds = () => {
 
   const playTone = useCallback((frequency, duration, type = 'sine', volume = 0.3) => {
     const ctx = audioContextRef.current;
-    if (!ctx) return;
+    const settings = settingsContextRef.current?.settings;
+    if (!ctx || (settings && !settings.soundEnabled)) return;
+
+    const adjustedVolume = settings ? volume * settings.soundVolume : volume;
 
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
@@ -27,7 +39,7 @@ export const useSounds = () => {
     oscillator.type = type;
     oscillator.frequency.value = frequency;
     
-    gainNode.gain.setValueAtTime(volume, ctx.currentTime);
+    gainNode.gain.setValueAtTime(adjustedVolume, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
 
     oscillator.start(ctx.currentTime);

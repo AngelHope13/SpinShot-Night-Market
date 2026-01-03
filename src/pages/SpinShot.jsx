@@ -7,6 +7,8 @@ import RoundResults from '@/components/spinshot/RoundResults';
 import GameOver from '@/components/spinshot/GameOver';
 import Victory from '@/components/spinshot/Victory';
 import Credits from '@/components/spinshot/Credits';
+import Settings from '@/components/spinshot/Settings';
+import { SettingsProvider, useSettings } from '@/components/spinshot/useSettings';
 
 const INITIAL_STATE = {
   screen: 'intro',
@@ -18,8 +20,9 @@ const INITIAL_STATE = {
   roundCleared: false,
 };
 
-export default function SpinShot() {
+function SpinShotGame() {
   const [gameState, setGameState] = useState(INITIAL_STATE);
+  const { settings } = useSettings();
 
   const goToScreen = useCallback((screen) => {
     setGameState(prev => ({ ...prev, screen }));
@@ -85,14 +88,25 @@ export default function SpinShot() {
     setGameState(INITIAL_STATE);
   }, []);
 
+  const themeGradients = {
+    night: 'from-indigo-950 via-purple-950 to-violet-950',
+    day: 'from-sky-400 via-blue-300 to-cyan-200',
+    neon: 'from-purple-900 via-pink-800 to-fuchsia-900',
+    sunset: 'from-orange-600 via-red-500 to-pink-600',
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-950 via-purple-950 to-violet-950 overflow-hidden">
+    <div className={`min-h-screen bg-gradient-to-b ${themeGradients[settings.theme]} overflow-hidden`}>
       {gameState.screen === 'intro' && (
         <IntroScreen 
           onStart={startGame} 
           onHowToPlay={() => goToScreen('howtoplay')}
           onCredits={() => goToScreen('credits')}
+          onSettings={() => goToScreen('settings')}
         />
+      )}
+      {gameState.screen === 'settings' && (
+        <Settings onBack={backToMenu} />
       )}
       {gameState.screen === 'howtoplay' && (
         <HowToPlay 
@@ -147,5 +161,13 @@ export default function SpinShot() {
         />
       )}
     </div>
+  );
+}
+
+export default function SpinShot() {
+  return (
+    <SettingsProvider>
+      <SpinShotGame />
+    </SettingsProvider>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Clock, Crosshair, Sparkles, Zap, Wind, Gauge, XCircle } from 'lucide-react';
 import { useSounds } from './useSounds';
+import { useSettings } from './useSettings';
 
 const TARGETS = [
   { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.35 },
@@ -36,6 +37,17 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const arenaRef = useRef(null);
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
+  const { settings } = useSettings();
+
+  const getTargetEmoji = (targetType) => {
+    const emojiMap = {
+      default: { milktea: '🧋', balloon: '🎈', stinkytofu: '🤢', luckycat: '🐱' },
+      kawaii: { milktea: '🥤', balloon: '🎀', stinkytofu: '😋', luckycat: '😻' },
+      pixel: { milktea: '🟫', balloon: '🔴', stinkytofu: '🟢', luckycat: '🟡' },
+      minimal: { milktea: '⚪', balloon: '⚫', stinkytofu: '⭕', luckycat: '✨' },
+    };
+    return emojiMap[settings.targetSkin]?.[targetType] || emojiMap.default[targetType];
+  };
 
   // Speed multiplier based on wheel effect
   const getSpeedMultiplier = () => {
@@ -365,7 +377,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
               <div className={`w-full h-full flex items-center justify-center text-4xl md:text-5xl transition-transform hover:scale-110 ${target.isPaused ? 'animate-bounce' : ''}`}
                 style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}
               >
-                {target.emoji}
+                {getTargetEmoji(target.type)}
               </div>
               {target.type === 'luckycat' && (
                 <div className="absolute inset-0 animate-ping">
