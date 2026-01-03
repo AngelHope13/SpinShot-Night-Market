@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Clock, Crosshair, Sparkles, Zap, Wind, Gauge, XCircle } from 'lucide-react';
+import { Target, Clock, Crosshair, Sparkles, Zap, Wind, Gauge, XCircle, Plus, Snowflake, TrendingUp } from 'lucide-react';
 import { useSounds } from './useSounds';
 import { useSettings } from './useSettings';
 
@@ -22,6 +22,12 @@ const EFFECT_ICONS = {
   stinky: () => <span>🤢</span>,
 };
 
+const POWERUPS = [
+  { id: 'extra-darts', name: 'Extra Darts', icon: Plus, emoji: '🎯', color: '#3b82f6', description: '+5 Darts' },
+  { id: 'freeze-time', name: 'Freeze Time', icon: Snowflake, emoji: '❄️', color: '#06b6d4', description: '5s Freeze' },
+  { id: 'score-boost', name: 'Score Boost', icon: TrendingUp, emoji: '⭐', color: '#f59e0b', description: '2x for 10s' },
+];
+
 export default function GameplayArena({ level, totalScore, wheelEffect, onRoundEnd }) {
   const isBoss = level === 5;
   const initialDarts = isBoss ? 20 : 15;
@@ -34,6 +40,9 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [targets, setTargets] = useState([]);
   const [hitEffects, setHitEffects] = useState([]);
   const [windOffset, setWindOffset] = useState({ x: 0, y: 0 });
+  const [powerups, setPowerups] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [activePowerups, setActivePowerups] = useState({});
   const arenaRef = useRef(null);
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
@@ -64,9 +73,11 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
 
   // Score multiplier
   const getScoreMultiplier = () => {
-    if (wheelEffect?.id === 'x2') return 2;
-    if (wheelEffect?.id === 'x3') return 3;
-    return 1;
+    let multiplier = 1;
+    if (wheelEffect?.id === 'x2') multiplier = 2;
+    if (wheelEffect?.id === 'x3') multiplier = 3;
+    if (activePowerups['score-boost']) multiplier *= 2;
+    return multiplier;
   };
 
   // Spawn targets
@@ -111,6 +122,33 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     return () => clearInterval(interval);
   }, []);
 
+  // Spawn powerups
+  useEffect(() => {
+    const spawnPowerup = () => {
+      if (gameEndedRef.current || Math.random() > 0.3) return;
+
+      const arena = arenaRef.current;
+      if (!arena) return;
+      
+      const rect = arena.getBoundingClientRect();
+      const padding = 100;
+
+      const powerup = POWERUPS[Math.floor(Math.random() * POWERUPS.length)];
+      const newPowerup = {
+        id: Date.now() + Math.random(),
+        ...powerup,
+        x: padding + Math.random() * (rect.width - padding * 2),
+        y: padding + Math.random() * (rect.height - padding * 2),
+      };
+
+      setPowerups(prev => [...prev.slice(-2), newPowerup]);
+    };
+
+    const interval = setInterval(spawnPowerup, 8000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   // Move targets
   useEffect(() => {
     const moveTargets = () => {
@@ -119,10 +157,14 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       const arena = arenaRef.current;
       if (!arena) return;
       const rect = arena.getBoundingClientRect();
-      const speed = 2 * getSpeedMultiplier();
+      const speed = activePowerups['freeze-time'] ? 0 : 2 * getSpeedMultiplier();
       const pauseDuration = getPauseDuration();
 
       setTargets(prev => prev.map(target => {
+        if (activePowerups['freeze-time']) {
+          return target;
+        }
+
         if (target.isPaused) {
           if (Date.now() - target.pauseTimer > pauseDuration) {
             return { ...target, isPaused: false };
@@ -155,7 +197,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
 
     const interval = setInterval(moveTargets, 16);
     return () => clearInterval(interval);
-  }, [wheelEffect]);
+  }, [wheelEffect, activePowerups]);
 
   // Wind effect
   useEffect(() => {
@@ -247,6 +289,49 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     setHitEffects(prev => [...prev, { id: Date.now(), x, y, text: 'MISS', color: '#ef4444' }]);
   }, [darts, windOffset, sounds]);
 
+  const handlePowerupClick = useCallback((powerup, e) => {
+    e.stopPropagation();
+    sounds.targetHit(100);
+    setPowerups(prev => prev.filter(p => p.id !== powerup.id));
+    setInventory(prev => [...prev, { ...powerup, inventoryId: Date.now() }]);
+    setHitEffects(prev => [...prev, { 
+      id: Date.now(), 
+      x: powerup.x, 
+      y: powerup.y, 
+      text: 'POWERUP!',
+      color: powerup.color
+    }]);
+  }, [sounds]);
+
+  const activatePowerup = useCallback((powerup) => {
+    if (activePowerups[powerup.id]) return;
+
+    sounds.buttonClick();
+    setInventory(prev => prev.filter(p => p.inventoryId !== powerup.inventoryId));
+
+    if (powerup.id === 'extra-darts') {
+      setDarts(prev => prev + 5);
+      setHitEffects(prev => [...prev, { 
+        id: Date.now(), 
+        x: window.innerWidth / 2, 
+        y: 100, 
+        text: '+5 DARTS!',
+        color: powerup.color
+      }]);
+    } else {
+      setActivePowerups(prev => ({ ...prev, [powerup.id]: true }));
+      
+      const duration = powerup.id === 'freeze-time' ? 5000 : 10000;
+      setTimeout(() => {
+        setActivePowerups(prev => {
+          const updated = { ...prev };
+          delete updated[powerup.id];
+          return updated;
+        });
+      }, duration);
+    }
+  }, [activePowerups, sounds]);
+
   // Clean up hit effects
   useEffect(() => {
     if (hitEffects.length > 0) {
@@ -299,15 +384,65 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
 
           {/* Second row */}
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 bg-purple-900/40 backdrop-blur px-3 py-1.5 rounded-lg border border-purple-500/20">
-              <EffectIcon className="w-4 h-4" style={{ color: wheelEffect?.color || '#a78bfa' }} />
-              <span className="text-sm font-semibold text-purple-200">{wheelEffect?.name || 'No Effect'}</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-purple-900/40 backdrop-blur px-3 py-1.5 rounded-lg border border-purple-500/20">
+                <EffectIcon className="w-4 h-4" style={{ color: wheelEffect?.color || '#a78bfa' }} />
+                <span className="text-sm font-semibold text-purple-200">{wheelEffect?.name || 'No Effect'}</span>
+              </div>
+              
+              {/* Active powerup indicators */}
+              {activePowerups['freeze-time'] && (
+                <div className="flex items-center gap-1 bg-cyan-900/60 px-2 py-1 rounded-lg border border-cyan-500/30 animate-pulse">
+                  <Snowflake className="w-3 h-3 text-cyan-400" />
+                  <span className="text-xs text-cyan-300 font-medium">FREEZE</span>
+                </div>
+              )}
+              {activePowerups['score-boost'] && (
+                <div className="flex items-center gap-1 bg-amber-900/60 px-2 py-1 rounded-lg border border-amber-500/30 animate-pulse">
+                  <TrendingUp className="w-3 h-3 text-amber-400" />
+                  <span className="text-xs text-amber-300 font-medium">2X SCORE</span>
+                </div>
+              )}
             </div>
 
             <div className="text-purple-300 text-sm">
               Total: <span className="text-white font-bold">{(totalScore + roundScore).toLocaleString()}</span>
             </div>
           </div>
+
+          {/* Powerup Inventory */}
+          {inventory.length > 0 && (
+            <div className="mt-3 flex justify-center gap-2">
+              {inventory.map((powerup) => (
+                <motion.button
+                  key={powerup.inventoryId}
+                  onClick={() => activatePowerup(powerup)}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="relative group"
+                  disabled={activePowerups[powerup.id]}
+                >
+                  <div className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center text-2xl transition-all ${
+                    activePowerups[powerup.id] 
+                      ? 'border-gray-600 bg-gray-800/50 opacity-50 cursor-not-allowed'
+                      : 'border-purple-400 bg-purple-900/60 hover:bg-purple-800/80 cursor-pointer'
+                  }`}
+                    style={{ boxShadow: `0 0 20px ${powerup.color}40` }}
+                  >
+                    {powerup.emoji}
+                  </div>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                    <div className="bg-black/90 text-white text-xs px-2 py-1 rounded">
+                      {powerup.description}
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          )}
 
           {/* Boss target score */}
           {isBoss && (
@@ -358,7 +493,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
               key={target.id}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ 
-                scale: target.isPaused ? 1.1 : 1, 
+                scale: target.isPaused || activePowerups['freeze-time'] ? 1.1 : 1, 
                 opacity: 1,
                 x: target.x,
                 y: target.y,
@@ -374,8 +509,8 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                 marginTop: -target.size / 2,
               }}
             >
-              <div className={`w-full h-full flex items-center justify-center text-4xl md:text-5xl transition-transform hover:scale-110 ${target.isPaused ? 'animate-bounce' : ''}`}
-                style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}
+              <div className={`w-full h-full flex items-center justify-center text-4xl md:text-5xl transition-transform hover:scale-110 ${target.isPaused || activePowerups['freeze-time'] ? 'animate-bounce' : ''}`}
+                style={{ filter: activePowerups['freeze-time'] ? 'drop-shadow(0 0 15px rgba(6,182,212,0.8))' : 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}
               >
                 {getTargetEmoji(target.type)}
               </div>
@@ -384,6 +519,50 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                   <div className="w-full h-full rounded-full bg-yellow-400/30" />
                 </div>
               )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* Powerups */}
+        <AnimatePresence>
+          {powerups.map((powerup) => (
+            <motion.div
+              key={powerup.id}
+              initial={{ scale: 0, opacity: 0, rotate: 0 }}
+              animate={{ 
+                scale: [1, 1.1, 1],
+                opacity: 1,
+                rotate: 360,
+                x: powerup.x,
+                y: powerup.y,
+              }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ 
+                scale: { duration: 2, repeat: Infinity },
+                rotate: { duration: 3, repeat: Infinity, ease: "linear" }
+              }}
+              onClick={(e) => handlePowerupClick(powerup, e)}
+              className="absolute cursor-pointer select-none"
+              style={{ 
+                width: 70, 
+                height: 70,
+                marginLeft: -35,
+                marginTop: -35,
+              }}
+            >
+              <div className="relative w-full h-full">
+                <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: `${powerup.color}40` }} />
+                <div 
+                  className="absolute inset-0 rounded-full flex items-center justify-center text-4xl font-bold shadow-lg"
+                  style={{ 
+                    backgroundColor: `${powerup.color}60`,
+                    border: `3px solid ${powerup.color}`,
+                    boxShadow: `0 0 30px ${powerup.color}`
+                  }}
+                >
+                  {powerup.emoji}
+                </div>
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
