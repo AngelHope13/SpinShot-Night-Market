@@ -1,10 +1,10 @@
-import SpinShot from './pages/SpinShot';
 import MusicUpload from './pages/MusicUpload';
+import SpinShot from './pages/SpinShot';
 
 
 export const PAGES = {
-    "SpinShot": SpinShot,
     "MusicUpload": MusicUpload,
+    "SpinShot": SpinShot,
 }
 
 export const pagesConfig = {

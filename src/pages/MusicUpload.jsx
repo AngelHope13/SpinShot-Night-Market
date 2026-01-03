@@ -22,12 +22,22 @@ export default function MusicUpload() {
     setSuccess(false);
 
     try {
-      const { data } = await base44.integrations.Core.UploadFile({ file });
-      localStorage.setItem('spinshot-music-url', data.file_url);
-      setCurrentUrl(data.file_url);
+      const response = await base44.integrations.Core.UploadFile({ file });
+      console.log('Upload response:', response);
+      
+      // Handle different response structures
+      const fileUrl = response?.file_url || response?.data?.file_url || response;
+      
+      if (!fileUrl || typeof fileUrl !== 'string') {
+        throw new Error('Invalid response from upload service');
+      }
+      
+      localStorage.setItem('spinshot-music-url', fileUrl);
+      setCurrentUrl(fileUrl);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
+      console.error('Upload error:', error);
       alert('Upload failed: ' + error.message);
     } finally {
       setUploading(false);
