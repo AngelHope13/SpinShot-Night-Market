@@ -5,6 +5,22 @@ import { useSounds } from './useSounds';
 
 export default function GameOver({ totalScore, levelReached, onPlayAgain, onMenu }) {
   const sounds = useSounds();
+
+  useEffect(() => {
+    saveScore();
+  }, []);
+
+  const saveScore = async () => {
+    try {
+      await base44.entities.Score.create({
+        total_score: totalScore,
+        level_reached: levelReached,
+        game_date: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Failed to save score:', error);
+    }
+  };
   
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

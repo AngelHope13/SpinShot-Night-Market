@@ -8,7 +8,9 @@ import GameOver from '@/components/spinshot/GameOver';
 import Victory from '@/components/spinshot/Victory';
 import Credits from '@/components/spinshot/Credits';
 import Settings from '@/components/spinshot/Settings';
+import Leaderboard from '@/components/spinshot/Leaderboard';
 import { SettingsProvider, useSettings } from '@/components/spinshot/useSettings';
+import { base44 } from '@/api/base44Client';
 
 const INITIAL_STATE = {
   screen: 'intro',
@@ -159,6 +161,7 @@ function SpinShotGame() {
           onHowToPlay={() => goToScreen('howtoplay')}
           onCredits={() => goToScreen('credits')}
           onSettings={() => goToScreen('settings')}
+          onLeaderboard={() => goToScreen('leaderboard')}
         />
       )}
       {gameState.screen === 'settings' && (
@@ -172,6 +175,9 @@ function SpinShotGame() {
       )}
       {gameState.screen === 'credits' && (
         <Credits onBack={backToMenu} />
+      )}
+      {gameState.screen === 'leaderboard' && (
+        <Leaderboard onBack={backToMenu} />
       )}
       {gameState.screen === 'wheel' && (
         <WheelOfFate 

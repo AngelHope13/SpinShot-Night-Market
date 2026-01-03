@@ -34,7 +34,7 @@ const NeonGlow = () => (
   </div>
 );
 
-export default function IntroScreen({ onStart, onHowToPlay, onCredits, onSettings }) {
+export default function IntroScreen({ onStart, onHowToPlay, onCredits, onSettings, onLeaderboard }) {
   const [particles, setParticles] = useState([]);
   const sounds = useSounds();
 
