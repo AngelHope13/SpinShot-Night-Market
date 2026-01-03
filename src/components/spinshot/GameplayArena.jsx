@@ -50,10 +50,13 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [roundScore, setRoundScore] = useState(0);
   const [targets, setTargets] = useState([]);
   const [hitEffects, setHitEffects] = useState([]);
+  const [particles, setParticles] = useState([]);
   const [windOffset, setWindOffset] = useState({ x: 0, y: 0 });
   const [powerups, setPowerups] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [activePowerups, setActivePowerups] = useState({});
+  const [screenShake, setScreenShake] = useState(0);
+  const [scoreAnimation, setScoreAnimation] = useState(0);
   const arenaRef = useRef(null);
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
@@ -315,6 +318,25 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     }
   }, [darts, roundScore, isBoss, bossTargetScore, onRoundEnd]);
 
+  const createParticles = useCallback((x, y, color, count = 15) => {
+    const newParticles = Array.from({ length: count }, (_, i) => ({
+      id: Date.now() + Math.random() + i,
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.5) * 8 - 2,
+      color,
+      size: Math.random() * 6 + 3,
+      life: 1,
+    }));
+    setParticles(prev => [...prev, ...newParticles]);
+  }, []);
+
+  const triggerScreenShake = useCallback((intensity = 1) => {
+    setScreenShake(intensity);
+    setTimeout(() => setScreenShake(0), 200);
+  }, []);
+
   const handleTargetClick = useCallback((target, e) => {
     if (darts <= 0 || gameEndedRef.current) return;
     
@@ -324,6 +346,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
 
     // Rubber darts = no score
     if (wheelEffect?.id === 'rubber') {
+      createParticles(target.x, target.y, '#ef4444', 8);
       setHitEffects(prev => [...prev, { id: Date.now(), x: target.x, y: target.y, text: 'BOUNCE!', color: '#ef4444' }]);
       return;
     }
@@ -331,8 +354,10 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     // Trap target - penalty!
     if (target.isTrap) {
       sounds.targetMiss();
-      setDarts(prev => Math.max(0, prev - 2)); // Lose 2 extra darts
-      setRoundScore(prev => Math.max(0, prev - 50)); // Lose 50 points
+      triggerScreenShake(2);
+      createParticles(target.x, target.y, '#dc2626', 20);
+      setDarts(prev => Math.max(0, prev - 2));
+      setRoundScore(prev => Math.max(0, prev - 50));
       setTargets(prev => prev.filter(t => t.id !== target.id));
       setHitEffects(prev => [...prev, { 
         id: Date.now(), 
@@ -350,6 +375,19 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     
     sounds.targetHit(points);
     setRoundScore(prev => prev + points);
+    setScoreAnimation(Date.now());
+    
+    // Screen shake for high value targets
+    if (points >= 300) triggerScreenShake(3);
+    else if (points >= 150) triggerScreenShake(1.5);
+    
+    // Particle colors based on target type
+    let particleColor = '#4ade80';
+    if (target.type === 'luckycat') particleColor = '#ffd93d';
+    else if (target.splits) particleColor = '#a855f7';
+    else if (target.type === 'stinkytofu') particleColor = '#22c55e';
+    
+    createParticles(target.x, target.y, particleColor, points >= 200 ? 25 : 15);
     setTargets(prev => prev.filter(t => t.id !== target.id));
     
     // Split target - create smaller targets
@@ -397,9 +435,10 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       x: target.x, 
       y: target.y, 
       text: target.splits ? `+${points} SPLIT!` : `+${points}`,
-      color: target.type === 'luckycat' ? '#ffd93d' : target.splits ? '#a855f7' : '#4ade80'
+      color: target.type === 'luckycat' ? '#ffd93d' : target.splits ? '#a855f7' : '#4ade80',
+      isLarge: points >= 200
     }]);
-  }, [darts, wheelEffect, sounds]);
+  }, [darts, wheelEffect, sounds, createParticles, triggerScreenShake]);
 
   const handleMiss = useCallback((e) => {
     if (darts <= 0 || gameEndedRef.current) return;
@@ -469,10 +508,38 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     }
   }, [hitEffects]);
 
+  // Particle physics
+  useEffect(() => {
+    if (particles.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setParticles(prev => 
+        prev
+          .map(p => ({
+            ...p,
+            x: p.x + p.vx,
+            y: p.y + p.vy,
+            vy: p.vy + 0.3, // gravity
+            life: p.life - 0.02,
+          }))
+          .filter(p => p.life > 0)
+      );
+    }, 16);
+    
+    return () => clearInterval(interval);
+  }, [particles.length]);
+
   const EffectIcon = EFFECT_ICONS[wheelEffect?.id] || Sparkles;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <motion.div 
+      className="min-h-screen flex flex-col"
+      animate={{
+        x: screenShake ? [0, -screenShake * 3, screenShake * 3, -screenShake * 2, screenShake * 2, 0] : 0,
+        y: screenShake ? [0, -screenShake * 2, screenShake * 2, -screenShake, screenShake, 0] : 0,
+      }}
+      transition={{ duration: 0.2 }}
+    >
       {/* HUD */}
       <div className="bg-gradient-to-b from-indigo-950 to-transparent p-4">
         <div className="max-w-4xl mx-auto">
@@ -492,20 +559,40 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                 </div>
               </div>
               
-              <div className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30 flex items-center gap-2">
+              <motion.div 
+                className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30 flex items-center gap-2"
+                animate={{
+                  scale: timeLeft <= 10 ? [1, 1.05, 1] : 1,
+                }}
+                transition={{ duration: 1, repeat: timeLeft <= 10 ? Infinity : 0 }}
+              >
                 <Clock className={`w-5 h-5 ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-teal-400'}`} />
                 <div>
                   <div className="text-purple-300 text-xs">TIME</div>
                   <div className={`text-2xl font-black ${timeLeft <= 10 ? 'text-red-400' : 'text-white'}`}>{timeLeft}s</div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             <div className="text-right">
-              <div className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30">
+              <motion.div 
+                className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30"
+                animate={{
+                  scale: scoreAnimation ? [1, 1.15, 1] : 1,
+                }}
+                transition={{ duration: 0.3 }}
+                key={scoreAnimation}
+              >
                 <div className="text-purple-300 text-xs">ROUND SCORE</div>
-                <div className="text-2xl font-black text-yellow-400">{roundScore.toLocaleString()}</div>
-              </div>
+                <motion.div 
+                  className="text-2xl font-black text-yellow-400"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 0.2 }}
+                  key={roundScore}
+                >
+                  {roundScore.toLocaleString()}
+                </motion.div>
+              </motion.div>
             </div>
           </div>
 
@@ -640,20 +727,57 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           </div>
         )}
 
+        {/* Particles */}
+        <AnimatePresence>
+          {particles.map((particle) => (
+            <motion.div
+              key={particle.id}
+              initial={{ scale: 1 }}
+              animate={{ 
+                scale: 0,
+                x: particle.x,
+                y: particle.y,
+                opacity: particle.life,
+              }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.05 }}
+              className="absolute pointer-events-none rounded-full"
+              style={{
+                width: particle.size,
+                height: particle.size,
+                backgroundColor: particle.color,
+                boxShadow: `0 0 10px ${particle.color}`,
+                marginLeft: -particle.size / 2,
+                marginTop: -particle.size / 2,
+              }}
+            />
+          ))}
+        </AnimatePresence>
+
         {/* Targets */}
         <AnimatePresence>
           {targets.map((target) => (
             <motion.div
               key={target.id}
-              initial={{ scale: 0, opacity: 0 }}
+              initial={{ scale: 0, opacity: 0, rotate: 0 }}
               animate={{ 
                 scale: target.isPaused || activePowerups['freeze-time'] ? 1.1 : 1, 
                 opacity: 1,
                 x: target.x,
                 y: target.y,
+                rotate: target.movePattern === 'spiral' ? [0, 360] : 0,
               }}
-              exit={{ scale: 1.5, opacity: 0 }}
-              transition={{ type: 'spring', damping: 15 }}
+              exit={{ 
+                scale: [1, 1.3, 0],
+                opacity: [1, 1, 0],
+                rotate: target.splits ? 180 : 0,
+              }}
+              transition={{ 
+                type: 'spring', 
+                damping: 15,
+                exit: { duration: 0.4 },
+                rotate: target.movePattern === 'spiral' ? { duration: 2, repeat: Infinity, ease: "linear" } : {}
+              }}
               onClick={(e) => handleTargetClick(target, e)}
               className="absolute cursor-pointer select-none"
               style={{ 
@@ -740,16 +864,22 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           {hitEffects.map((effect) => (
             <motion.div
               key={effect.id}
-              initial={{ scale: 0.5, opacity: 1, y: 0 }}
-              animate={{ scale: 1.2, opacity: 0, y: -40 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6 }}
-              className="absolute pointer-events-none font-black text-2xl"
+              initial={{ scale: 0.3, opacity: 1, y: 0, rotate: -10 }}
+              animate={{ 
+                scale: effect.isLarge ? [1, 1.5, 1.3] : [1, 1.3, 1.2],
+                opacity: [1, 1, 0],
+                y: -50,
+                rotate: 10,
+              }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{ duration: 0.7, times: [0, 0.3, 1] }}
+              className={`absolute pointer-events-none font-black ${effect.isLarge ? 'text-4xl' : 'text-2xl'}`}
               style={{ 
                 left: effect.x, 
                 top: effect.y,
                 color: effect.color,
-                textShadow: `0 0 10px ${effect.color}`,
+                textShadow: `0 0 20px ${effect.color}, 0 0 40px ${effect.color}`,
+                filter: `drop-shadow(0 0 10px ${effect.color})`,
               }}
             >
               {effect.text}
@@ -765,6 +895,6 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           </div>
         )}
       </div>
-    </div>
-  );
-}
+      </motion.div>
+      );
+      }
