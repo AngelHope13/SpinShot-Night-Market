@@ -180,7 +180,7 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
                     filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4)) drop-shadow(0 0 12px rgba(255,255,255,0.3))',
                   }}
                 >
-                  <GhibliIcon className="w-7 h-7" />
+                  <GhibliIcon className="w-11 h-11" />
                 </div>
               </motion.div>
             );
