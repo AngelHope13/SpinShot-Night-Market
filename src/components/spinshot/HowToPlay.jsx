@@ -43,7 +43,7 @@ const TargetInfo = ({ emoji, name, description, points, color, delay }) => (
 export default function HowToPlay({ onBack, onContinue }) {
   const sounds = useSounds();
   const targets = [
-    { emoji: '🧋', name: 'Milk Tea', description: 'Medium speed, bouncy movement', points: 100, color: 'bg-amber-600' },
+    { emoji: '🧋', name: 'Milk Tea', description: 'Medium speed, bouncy movement', points: 100, color: 'bg-purple-600' },
     { emoji: '🎈', name: 'Balloon', description: 'Easy target, floats gently', points: 50, color: 'bg-red-500' },
     { emoji: '🤢', name: 'Stinky Tofu', description: 'Tricky movement pattern', points: 150, color: 'bg-green-600' },
     { emoji: '🐱', name: 'Lucky Cat', description: 'Rare bonus target!', points: 300, color: 'bg-yellow-500' },
