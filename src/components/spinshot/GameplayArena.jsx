@@ -59,7 +59,9 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [scoreAnimation, setScoreAnimation] = useState(0);
   const [dartTrails, setDartTrails] = useState([]);
   const [impactWaves, setImpactWaves] = useState([]);
+  const [projectiles, setProjectiles] = useState([]);
   const arenaRef = useRef(null);
+  const projectileSpeed = 15; // pixels per frame
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
   const { settings } = useSettings();
@@ -339,40 +341,27 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     setTimeout(() => setScreenShake(0), 200);
   }, []);
 
-  const handleTargetClick = useCallback((target, e) => {
-    if (darts <= 0 || gameEndedRef.current) return;
-    
-    e.stopPropagation();
-    sounds.dartThrow();
-    setDarts(prev => prev - 1);
+  const checkCollision = useCallback((projX, projY, target) => {
+    const distance = Math.sqrt(
+      Math.pow(projX - target.x, 2) + Math.pow(projY - target.y, 2)
+    );
+    return distance < (target.size / 2 + 10); // 10px collision buffer
+  }, []);
 
-    // Create dart trail from click to target
-    const rect = arenaRef.current?.getBoundingClientRect();
-    if (rect) {
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-      setDartTrails(prev => [...prev, {
-        id: Date.now(),
-        x1: clickX,
-        y1: clickY,
-        x2: target.x,
-        y2: target.y,
-      }]);
-      setTimeout(() => setDartTrails(prev => prev.slice(1)), 300);
-    }
-
+  const handleProjectileHit = useCallback((projectile, target) => {
     // Create impact wave
     setImpactWaves(prev => [...prev, {
       id: Date.now(),
-      x: target.x,
-      y: target.y,
+      x: projectile.x,
+      y: projectile.y,
     }]);
     setTimeout(() => setImpactWaves(prev => prev.slice(1)), 600);
 
     // Rubber darts = no score
     if (wheelEffect?.id === 'rubber') {
-      createParticles(target.x, target.y, '#ef4444', 8);
-      setHitEffects(prev => [...prev, { id: Date.now(), x: target.x, y: target.y, text: 'BOUNCE!', color: '#ef4444' }]);
+      createParticles(projectile.x, projectile.y, '#ef4444', 8);
+      setHitEffects(prev => [...prev, { id: Date.now(), x: projectile.x, y: projectile.y, text: 'BOUNCE!', color: '#ef4444' }]);
+      setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
       return;
     }
 
@@ -380,14 +369,15 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     if (target.isTrap) {
       sounds.targetMiss();
       triggerScreenShake(2);
-      createParticles(target.x, target.y, '#dc2626', 20);
+      createParticles(projectile.x, projectile.y, '#dc2626', 20);
       setDarts(prev => Math.max(0, prev - 2));
       setRoundScore(prev => Math.max(0, prev - 50));
       setTargets(prev => prev.filter(t => t.id !== target.id));
+      setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
       setHitEffects(prev => [...prev, { 
         id: Date.now(), 
-        x: target.x, 
-        y: target.y, 
+        x: projectile.x, 
+        y: projectile.y, 
         text: '-50 💀',
         color: '#dc2626'
       }]);
@@ -412,8 +402,9 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     else if (target.splits) particleColor = '#a855f7';
     else if (target.type === 'stinkytofu') particleColor = '#22c55e';
     
-    createParticles(target.x, target.y, particleColor, points >= 200 ? 25 : 15);
+    createParticles(projectile.x, projectile.y, particleColor, points >= 200 ? 25 : 15);
     setTargets(prev => prev.filter(t => t.id !== target.id));
+    setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
     
     // Split target - create smaller targets
     if (target.splits) {
@@ -427,8 +418,8 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
             points: 50,
             size: 40,
             ghibliComponent: GhibliMilktea,
-            x: target.x - 30,
-            y: target.y - 30,
+            x: projectile.x - 30,
+            y: projectile.y - 30,
             direction: { x: -1.5, y: -1.5 },
             isPaused: false,
             pauseTimer: 0,
@@ -442,8 +433,8 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
             points: 50,
             size: 40,
             ghibliComponent: GhibliBalloon,
-            x: target.x + 30,
-            y: target.y - 30,
+            x: projectile.x + 30,
+            y: projectile.y - 30,
             direction: { x: 1.5, y: -1.5 },
             isPaused: false,
             pauseTimer: 0,
@@ -457,13 +448,18 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     
     setHitEffects(prev => [...prev, { 
       id: Date.now(), 
-      x: target.x, 
-      y: target.y, 
+      x: projectile.x, 
+      y: projectile.y, 
       text: target.splits ? `+${points} SPLIT!` : `+${points}`,
       color: target.type === 'luckycat' ? '#ffd93d' : target.splits ? '#a855f7' : '#4ade80',
       isLarge: points >= 200
     }]);
-  }, [darts, wheelEffect, sounds, createParticles, triggerScreenShake]);
+  }, [wheelEffect, sounds, createParticles, triggerScreenShake, getScoreMultiplier]);
+
+  const handleTargetClick = useCallback((target, e) => {
+    e.stopPropagation();
+    // Targets are no longer clickable, firing happens from handleMiss
+  }, []);
 
   const handleMiss = useCallback((e) => {
     if (darts <= 0 || gameEndedRef.current) return;
@@ -471,28 +467,39 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     const rect = arenaRef.current?.getBoundingClientRect();
     if (!rect) return;
     
-    let x = e.clientX - rect.left + windOffset.x;
-    let y = e.clientY - rect.top + windOffset.y;
+    // Starting position (center bottom of screen)
+    const startX = rect.width / 2;
+    const startY = rect.height - 50;
+    
+    // Target position with wind effect
+    let targetX = e.clientX - rect.left + windOffset.x;
+    let targetY = e.clientY - rect.top + windOffset.y;
+    
+    // Calculate trajectory
+    const dx = targetX - startX;
+    const dy = targetY - startY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const vx = (dx / distance) * projectileSpeed;
+    const vy = (dy / distance) * projectileSpeed;
     
     sounds.dartThrow();
-    sounds.targetMiss();
     setDarts(prev => prev - 1);
     
-    // Miss trail effect
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-    setDartTrails(prev => [...prev, {
+    // Create projectile
+    const newProjectile = {
       id: Date.now(),
-      x1: clickX,
-      y1: clickY,
-      x2: x,
-      y2: y,
-      isMiss: true,
-    }]);
-    setTimeout(() => setDartTrails(prev => prev.slice(1)), 300);
+      x: startX,
+      y: startY,
+      vx,
+      vy,
+      targetX,
+      targetY,
+      distanceTraveled: 0,
+      maxDistance: distance,
+    };
     
-    setHitEffects(prev => [...prev, { id: Date.now(), x, y, text: 'MISS', color: '#ef4444' }]);
-  }, [darts, windOffset, sounds]);
+    setProjectiles(prev => [...prev, newProjectile]);
+  }, [darts, windOffset, sounds, projectileSpeed]);
 
   const handlePowerupClick = useCallback((powerup, e) => {
     e.stopPropagation();
@@ -548,6 +555,63 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       return () => clearTimeout(timer);
     }
   }, [hitEffects]);
+
+  // Projectile movement and collision detection
+  useEffect(() => {
+    if (projectiles.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setProjectiles(prev => {
+        const updated = [];
+        
+        prev.forEach(proj => {
+          // Move projectile
+          const newX = proj.x + proj.vx;
+          const newY = proj.y + proj.vy;
+          const newDistance = proj.distanceTraveled + projectileSpeed;
+          
+          // Check if projectile reached destination or went off screen
+          if (newDistance >= proj.maxDistance || newX < 0 || newX > window.innerWidth || newY < 0 || newY > window.innerHeight) {
+            // Projectile missed
+            sounds.targetMiss();
+            setHitEffects(prev => [...prev, { 
+              id: Date.now(), 
+              x: proj.targetX, 
+              y: proj.targetY, 
+              text: 'MISS', 
+              color: '#ef4444' 
+            }]);
+            return; // Don't add to updated array
+          }
+          
+          // Check collision with targets
+          let hitTarget = null;
+          targets.forEach(target => {
+            if (checkCollision(newX, newY, target)) {
+              hitTarget = target;
+            }
+          });
+          
+          if (hitTarget) {
+            handleProjectileHit({ ...proj, x: newX, y: newY }, hitTarget);
+            return; // Don't add to updated array
+          }
+          
+          // Continue flying
+          updated.push({
+            ...proj,
+            x: newX,
+            y: newY,
+            distanceTraveled: newDistance,
+          });
+        });
+        
+        return updated;
+      });
+    }, 16);
+    
+    return () => clearInterval(interval);
+  }, [projectiles.length, targets, checkCollision, handleProjectileHit, sounds]);
 
   // Particle physics
   useEffect(() => {
@@ -783,33 +847,39 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           </div>
         )}
 
-        {/* Dart Trails */}
+        {/* Flying Projectiles (Darts) */}
         <AnimatePresence>
-          {dartTrails.map((trail) => {
-            const length = Math.sqrt(Math.pow(trail.x2 - trail.x1, 2) + Math.pow(trail.y2 - trail.y1, 2));
-            const angle = Math.atan2(trail.y2 - trail.y1, trail.x2 - trail.x1) * 180 / Math.PI;
-
-            return (
-              <motion.div
-                key={trail.id}
-                initial={{ scaleX: 0, opacity: 1 }}
-                animate={{ scaleX: 1, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="absolute pointer-events-none origin-left"
+          {projectiles.map((proj) => (
+            <motion.div
+              key={proj.id}
+              className="absolute pointer-events-none"
+              style={{
+                left: proj.x,
+                top: proj.y,
+                width: 8,
+                height: 8,
+                marginLeft: -4,
+                marginTop: -4,
+              }}
+            >
+              {/* Dart body */}
+              <div 
+                className="w-full h-full rounded-full bg-gradient-to-r from-pink-400 to-purple-500"
                 style={{
-                  left: trail.x1,
-                  top: trail.y1,
-                  width: length,
-                  height: 3,
-                  background: trail.isMiss 
-                    ? 'linear-gradient(90deg, rgba(239,68,68,0.8), rgba(239,68,68,0))'
-                    : 'linear-gradient(90deg, rgba(251,207,232,0.8), rgba(147,51,234,0))',
-                  transform: `rotate(${angle}deg)`,
-                  boxShadow: trail.isMiss ? '0 0 10px rgba(239,68,68,0.5)' : '0 0 10px rgba(251,207,232,0.5)',
+                  boxShadow: '0 0 15px rgba(236, 72, 153, 0.8)',
+                  transform: `rotate(${Math.atan2(proj.vy, proj.vx) * 180 / Math.PI}deg)`,
                 }}
               />
-            );
-          })}
+              {/* Trail effect */}
+              <div 
+                className="absolute top-1/2 right-full w-20 h-1 -translate-y-1/2"
+                style={{
+                  background: 'linear-gradient(90deg, transparent, rgba(251,207,232,0.6))',
+                  boxShadow: '0 0 8px rgba(251,207,232,0.4)',
+                }}
+              />
+            </motion.div>
+          ))}
         </AnimatePresence>
 
         {/* Impact Waves */}
@@ -886,8 +956,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                 exit: { duration: 0.4 },
                 rotate: target.movePattern === 'spiral' ? { duration: 2, repeat: Infinity, ease: "linear" } : {}
               }}
-              onClick={(e) => handleTargetClick(target, e)}
-              className="absolute cursor-pointer select-none"
+              className="absolute select-none pointer-events-none"
               style={{ 
                 width: target.size, 
                 height: target.size,
