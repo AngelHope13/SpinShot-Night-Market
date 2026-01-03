@@ -27,6 +27,7 @@ const targetSkins = [
   { id: 'pixel', name: 'Pixel Art', emoji: '🟦' },
   { id: 'minimal', name: 'Minimal', emoji: '⭕' },
   { id: 'bubble', name: 'Bubble Pop', emoji: '🫧' },
+  { id: 'ghibli', name: 'Studio Ghibli', emoji: '🌿' },
 ];
 
 const crosshairs = [
