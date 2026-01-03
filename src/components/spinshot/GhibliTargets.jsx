@@ -331,7 +331,7 @@ export const GhibliShavedIce = () => (
       <linearGradient id="iceGrad" x1="32" y1="10" x2="32" y2="60">
         <stop offset="0%" stopColor="#E0F2FE" />
         <stop offset="100%" stopColor="#22D3EE" />
-      </radialGradient>
+      </linearGradient>
       <filter id="iceGlow">
         <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
         <feMerge>
