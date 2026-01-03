@@ -946,15 +946,21 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
             return (
               <motion.div
                 key={proj.id}
-                className="absolute pointer-events-none"
+                className="absolute pointer-events-none top-0 left-0"
                 style={{
-                  left: proj.x,
-                  top: proj.y,
                   width: 32,
                   height: 32,
-                  marginLeft: -16,
-                  marginTop: -16,
-                  transform: `rotate(${angle}deg)`,
+                  willChange: 'transform',
+                }}
+                animate={{
+                  x: proj.x - 16,
+                  y: proj.y - 16,
+                  rotate: angle,
+                }}
+                transition={{
+                  type: "tween",
+                  ease: "linear",
+                  duration: 0,
                 }}
               >
                 {/* Dart visual */}
