@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, HelpCircle, Users, Settings, Trophy, Music } from 'lucide-react';
+import { Play, HelpCircle, Users, Settings, Trophy } from 'lucide-react';
 import { useSounds } from './useSounds';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
+
 
 const Lantern = ({ delay, x }) => (
   <motion.div
@@ -151,7 +150,7 @@ export default function IntroScreen({ onStart, onHowToPlay, onCredits, onSetting
           LEADERBOARD
         </motion.button>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <motion.button
             onClick={() => {
               sounds.buttonClick();
@@ -178,16 +177,7 @@ export default function IntroScreen({ onStart, onHowToPlay, onCredits, onSetting
             <span className="hidden sm:inline">SETTINGS</span>
           </motion.button>
 
-          <Link to={createPageUrl('MusicUpload')} onClick={() => sounds.buttonClick()}>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full px-4 py-3 bg-purple-800/50 backdrop-blur border border-purple-500/30 rounded-xl font-semibold text-purple-200 hover:bg-purple-700/50 transition-colors flex items-center justify-center gap-2"
-            >
-              <Music className="w-5 h-5" />
-              <span className="hidden sm:inline">MUSIC</span>
-            </motion.button>
-          </Link>
+
 
           <motion.button
             onClick={() => {
