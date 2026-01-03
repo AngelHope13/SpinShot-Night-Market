@@ -584,7 +584,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       sounds.targetHit(totalPoints);
       setRoundScore(prev => prev + totalPoints);
       setScoreAnimation(Date.now());
-      
+
       // Screen shake for high value
       if (totalPoints >= 300) triggerScreenShake(3);
       else if (totalPoints >= 150) triggerScreenShake(1.5);
@@ -604,8 +604,13 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
 
     // Remove hit targets and add split targets
     setTargets(prev => [...prev.filter(t => !targetIds.includes(t.id)), ...splitTargetsToAdd]);
-    setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
-  }, [wheelEffect, sounds, createParticles, triggerScreenShake, getScoreMultiplier]);
+
+    // Keep dart visible briefly at impact point before removing
+    setProjectiles(prev => prev.map(p => p.id === projectile.id ? { ...p, hit: true } : p));
+    setTimeout(() => {
+      setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
+    }, 150);
+    }, [wheelEffect, sounds, createParticles, triggerScreenShake, getScoreMultiplier]);
 
   const handleTargetClick = useCallback((target, e) => {
     e.stopPropagation();
@@ -1232,11 +1237,13 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                   width: 32,
                   height: 32,
                   willChange: 'transform',
+                  opacity: proj.hit ? 0.7 : 1,
                 }}
                 animate={{
                   x: proj.x - 16,
                   y: proj.y - 16,
                   rotate: angle,
+                  scale: proj.hit ? 1.2 : 1,
                 }}
                 transition={{
                   type: "tween",
