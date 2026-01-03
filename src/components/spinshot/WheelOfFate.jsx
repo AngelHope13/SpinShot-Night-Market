@@ -104,11 +104,6 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
               const x2 = 50 + 50 * Math.cos(endRad);
               const y2 = 50 + 50 * Math.sin(endRad);
               const largeArc = SEGMENT_ANGLE > 180 ? 1 : 0;
-              
-              const iconAngle = startAngle + SEGMENT_ANGLE / 2;
-              const iconRad = (iconAngle * Math.PI) / 180;
-              const iconX = 50 + 32 * Math.cos(iconRad);
-              const iconY = 50 + 32 * Math.sin(iconRad);
 
               return (
                 <g key={effect.id}>
@@ -118,25 +113,61 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
                     stroke="#1e1b4b"
                     strokeWidth="0.5"
                   />
-                  <text
-                    x={iconX}
-                    y={iconY}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize="10"
-                    transform={`rotate(${iconAngle + 90}, ${iconX}, ${iconY})`}
-                    className="select-none"
-                    style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}
-                  >
-                    {effect.emoji}
-                  </text>
+                  {/* Soft inner glow */}
+                  <path
+                    d={`M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                    fill="url(#glow)"
+                    opacity="0.3"
+                  />
                 </g>
               );
             })}
+            {/* Gradient for soft glow */}
+            <defs>
+              <radialGradient id="glow">
+                <stop offset="0%" stopColor="white" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="white" stopOpacity="0" />
+              </radialGradient>
+            </defs>
             {/* Center circle */}
             <circle cx="50" cy="50" r="12" fill="#1e1b4b" stroke="#6366f1" strokeWidth="2" />
             <circle cx="50" cy="50" r="8" fill="#4f46e5" />
           </svg>
+          
+          {/* Render icon overlays with Ghibli-style effects */}
+          {WHEEL_EFFECTS.map((effect, i) => {
+            const iconAngle = (i * SEGMENT_ANGLE - 90 + SEGMENT_ANGLE / 2) * (Math.PI / 180);
+            const iconX = 50 + 32 * Math.cos(iconAngle);
+            const iconY = 50 + 32 * Math.sin(iconAngle);
+            const Icon = effect.icon;
+            
+            return (
+              <div
+                key={`icon-${effect.id}`}
+                className="absolute"
+                style={{
+                  left: `${iconX}%`,
+                  top: `${iconY}%`,
+                  transform: `translate(-50%, -50%) rotate(${(i * SEGMENT_ANGLE + SEGMENT_ANGLE / 2)}deg)`,
+                }}
+              >
+                <div 
+                  className="relative"
+                  style={{
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3)) drop-shadow(0 0 8px rgba(255,255,255,0.4))',
+                  }}
+                >
+                  <Icon 
+                    className="w-6 h-6 text-white"
+                    strokeWidth={2.5}
+                    style={{
+                      filter: 'drop-shadow(0 1px 2px rgba(30,27,75,0.5))',
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </motion.div>
 
         {/* Spark particles */}
