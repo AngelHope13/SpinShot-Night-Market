@@ -3,21 +3,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Clock, Crosshair, Sparkles, Zap, Wind, Gauge, XCircle, Plus, Snowflake, TrendingUp } from 'lucide-react';
 import { useSounds } from './useSounds';
 import { useSettings } from './useSettings';
-import { GhibliMilktea, GhibliBalloon, GhibliStinkyTofu, GhibliLuckyCat, GhibliFortuneLantern } from './GhibliTargets';
+import { GhibliMilktea, GhibliBalloon, GhibliStinkyTofu, GhibliLuckyCat, GhibliFortuneLantern, GhibliSplitter, GhibliTrap, GhibliOysterOmelet, GhibliShavedIce, GhibliFriedChicken, GhibliBubbleTea, GhibliSquid, GhibliSignboard } from './GhibliTargets';
 
 const TARGETS = [
   { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.18, ghibliComponent: GhibliMilktea },
   { type: 'balloon', emoji: '🎈', points: 50, size: 70, spawnChance: 0.18, ghibliComponent: GhibliBalloon },
   { type: 'stinkytofu', emoji: '🤢', points: 150, size: 65, spawnChance: 0.10, ghibliComponent: GhibliStinkyTofu, movePattern: 'zigzag' },
   { type: 'luckycat', emoji: '🐱', points: 300, size: 65, spawnChance: 0.06, ghibliComponent: GhibliLuckyCat },
-  { type: 'splitter', emoji: '💫', points: 200, size: 70, spawnChance: 0.08, ghibliComponent: null, movePattern: 'spiral', splits: true },
-  { type: 'trap', emoji: '💀', points: -100, size: 60, spawnChance: 0.10, ghibliComponent: null, isTrap: true },
-  { type: 'oysteromelet', emoji: '🥚', points: 250, size: 70, spawnChance: 0.08, ghibliComponent: null, requiresHits: 2, currentHits: 0 },
-  { type: 'shavedice', emoji: '🍧', points: 200, size: 65, spawnChance: 0.06, ghibliComponent: null, freezesTargets: true },
-  { type: 'friedchicken', emoji: '🍗', points: 180, size: 65, spawnChance: 0.08, ghibliComponent: null, greasy: true },
-  { type: 'bubbletea', emoji: '🥤', points: 150, size: 60, spawnChance: 0.12, ghibliComponent: null, scoreBoost: 50 },
-  { type: 'squid', emoji: '🦑', points: 280, size: 60, spawnChance: 0.06, ghibliComponent: null, movePattern: 'wavy' },
-  { type: 'signboard', emoji: '🏮', points: 400, size: 75, spawnChance: 0.04, ghibliComponent: null, grantsLuckyAim: true },
+  { type: 'splitter', emoji: '💫', points: 200, size: 70, spawnChance: 0.08, ghibliComponent: GhibliSplitter, movePattern: 'spiral', splits: true },
+  { type: 'trap', emoji: '💀', points: -100, size: 60, spawnChance: 0.10, ghibliComponent: GhibliTrap, isTrap: true },
+  { type: 'oysteromelet', emoji: '🥚', points: 250, size: 70, spawnChance: 0.08, ghibliComponent: GhibliOysterOmelet, requiresHits: 2, currentHits: 0 },
+  { type: 'shavedice', emoji: '🍧', points: 200, size: 65, spawnChance: 0.06, ghibliComponent: GhibliShavedIce, freezesTargets: true },
+  { type: 'friedchicken', emoji: '🍗', points: 180, size: 65, spawnChance: 0.08, ghibliComponent: GhibliFriedChicken, greasy: true },
+  { type: 'bubbletea', emoji: '🥤', points: 150, size: 60, spawnChance: 0.12, ghibliComponent: GhibliBubbleTea, scoreBoost: 50 },
+  { type: 'squid', emoji: '🦑', points: 280, size: 60, spawnChance: 0.06, ghibliComponent: GhibliSquid, movePattern: 'wavy' },
+  { type: 'signboard', emoji: '🏮', points: 400, size: 75, spawnChance: 0.04, ghibliComponent: GhibliSignboard, grantsLuckyAim: true },
 ];
 
 const BOSS_TARGET = { 
@@ -85,11 +85,11 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     }
     
     const emojiMap = {
-      default: { milktea: '🧋', balloon: '🎈', stinkytofu: '🤢', luckycat: '🐱', fortunelantern: '🏮', splitter: '💫', trap: '💀' },
-      kawaii: { milktea: '🥤', balloon: '🎀', stinkytofu: '😋', luckycat: '😻', fortunelantern: '🎏', splitter: '⭐', trap: '👻' },
-      pixel: { milktea: '🟫', balloon: '🔴', stinkytofu: '🟢', luckycat: '🟡', fortunelantern: '🟠', splitter: '🔵', trap: '⬛' },
-      minimal: { milktea: '⚪', balloon: '⚫', stinkytofu: '⭕', luckycat: '✨', fortunelantern: '⭕', splitter: '◆', trap: '✕' },
-      bubble: { milktea: '🫧', balloon: '💭', stinkytofu: '🫧', luckycat: '✨', fortunelantern: '💭', splitter: '🫧', trap: '💭' },
+      default: { milktea: '🧋', balloon: '🎈', stinkytofu: '🤢', luckycat: '🐱', fortunelantern: '🏮', splitter: '💫', trap: '💀', oysteromelet: '🥚', shavedice: '🍧', friedchicken: '🍗', bubbletea: '🥤', squid: '🦑', signboard: '🏮' },
+      kawaii: { milktea: '🥤', balloon: '🎀', stinkytofu: '😋', luckycat: '😻', fortunelantern: '🎏', splitter: '⭐', trap: '👻', oysteromelet: '🍳', shavedice: '🧊', friedchicken: '🍖', bubbletea: '🧋', squid: '🐙', signboard: '🎏' },
+      pixel: { milktea: '🟫', balloon: '🔴', stinkytofu: '🟢', luckycat: '🟡', fortunelantern: '🟠', splitter: '🔵', trap: '⬛', oysteromelet: '🟨', shavedice: '⬜', friedchicken: '🟫', bubbletea: '🟣', squid: '🟧', signboard: '🟠' },
+      minimal: { milktea: '⚪', balloon: '⚫', stinkytofu: '⭕', luckycat: '✨', fortunelantern: '⭕', splitter: '◆', trap: '✕', oysteromelet: '○', shavedice: '◇', friedchicken: '●', bubbletea: '◐', squid: '◑', signboard: '◎' },
+      bubble: { milktea: '🫧', balloon: '💭', stinkytofu: '🫧', luckycat: '✨', fortunelantern: '💭', splitter: '🫧', trap: '💭', oysteromelet: '🫧', shavedice: '💭', friedchicken: '🫧', bubbletea: '💭', squid: '🫧', signboard: '💭' },
     };
     return emojiMap[settings.targetSkin]?.[target.type] || target.emoji;
   };

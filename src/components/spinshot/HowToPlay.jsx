@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, RotateCcw, Target, Trophy } from 'lucide-react';
 import { useSounds } from './useSounds';
-import { GhibliMilktea, GhibliBalloon, GhibliLuckyCat, GhibliStinkyTofu, GhibliFortuneLantern } from './GhibliTargets';
+import { GhibliMilktea, GhibliBalloon, GhibliLuckyCat, GhibliStinkyTofu, GhibliFortuneLantern, GhibliSplitter, GhibliTrap, GhibliOysterOmelet, GhibliShavedIce, GhibliFriedChicken, GhibliBubbleTea, GhibliSquid, GhibliSignboard } from './GhibliTargets';
 
 const StepCard = ({ number, icon: Icon, title, description, delay }) => (
   <motion.div
@@ -48,14 +48,14 @@ export default function HowToPlay({ onBack, onContinue }) {
     { component: GhibliBalloon, name: 'Balloon', description: 'Easy target, slow with longer pauses', points: 50 },
     { component: GhibliLuckyCat, name: 'Lucky Cat', description: 'Rare bonus target with high points!', points: 300 },
     { component: GhibliStinkyTofu, name: 'Stinky Tofu', description: 'Erratic movement, risk-reward target', points: 150 },
-    { emoji: '💫', name: 'Splitter', description: 'Splits into 2 smaller targets when hit', points: 200 },
-    { emoji: '💀', name: 'Trap', description: 'AVOID! Costs 2 darts & -50 points', points: -100 },
-    { emoji: '🥚', name: 'Oyster Omelet', description: 'Requires 2 hits to break', points: 250 },
-    { emoji: '🍧', name: 'Shaved Ice', description: 'Freezes all targets for 3s', points: 200 },
-    { emoji: '🍗', name: 'Fried Chicken', description: 'Greasy! 40% chance to deflect', points: 180 },
-    { emoji: '🥤', name: 'Bubble Tea', description: 'Instant +50 score bonus', points: 150 },
-    { emoji: '🦑', name: 'Squid Stick', description: 'Fast wavy movement', points: 280 },
-    { emoji: '🏮', name: 'Signboard', description: 'Grants Lucky Aim buff for 5s', points: 400 },
+    { component: GhibliSplitter, name: 'Splitter', description: 'Splits into 2 smaller targets when hit', points: 200 },
+    { component: GhibliTrap, name: 'Trap', description: 'AVOID! Costs 2 darts & -50 points', points: -100 },
+    { component: GhibliOysterOmelet, name: 'Oyster Omelet', description: 'Requires 2 hits to break', points: 250 },
+    { component: GhibliShavedIce, name: 'Shaved Ice', description: 'Freezes all targets for 3s', points: 200 },
+    { component: GhibliFriedChicken, name: 'Fried Chicken', description: 'Greasy! 40% chance to deflect', points: 180 },
+    { component: GhibliBubbleTea, name: 'Bubble Tea', description: 'Instant +50 score bonus', points: 150 },
+    { component: GhibliSquid, name: 'Squid Stick', description: 'Fast wavy movement', points: 280 },
+    { component: GhibliSignboard, name: 'Signboard', description: 'Grants Lucky Aim buff for 5s', points: 400 },
     { component: GhibliFortuneLantern, name: 'Fortune Lantern (Boss)', description: 'Level 5 only - slow, steady, very high points', points: 500 },
   ];
 

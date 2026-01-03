@@ -204,3 +204,336 @@ export const GhibliFortuneLantern = () => (
     </g>
   </svg>
 );
+
+// Splitter Target - "Cosmic Orb"
+export const GhibliSplitter = () => (
+  <svg viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <defs>
+      <radialGradient id="splitterGrad" cx="50%" cy="40%">
+        <stop offset="0%" stopColor="#E0C3FC" />
+        <stop offset="100%" stopColor="#A855F7" />
+      </radialGradient>
+      <filter id="splitterGlow">
+        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#splitterGlow)">
+      {/* Main sphere */}
+      <circle cx="35" cy="35" r="25" fill="url(#splitterGrad)" stroke="#C084FC" strokeWidth="2"/>
+      {/* Split line indication */}
+      <path d="M35 10 L35 60" stroke="#F5F3FF" strokeWidth="1" strokeDasharray="3 2" opacity="0.6"/>
+      {/* Swirling energy */}
+      <path d="M20 35 Q25 25 35 25 Q45 25 50 35" stroke="#F5F3FF" strokeWidth="2" fill="none" opacity="0.5" strokeLinecap="round"/>
+      <path d="M20 35 Q25 45 35 45 Q45 45 50 35" stroke="#DDD6FE" strokeWidth="2" fill="none" opacity="0.5" strokeLinecap="round"/>
+      {/* Twin orbs hint */}
+      <circle cx="28" cy="32" r="8" fill="#C084FC" opacity="0.4"/>
+      <circle cx="42" cy="38" r="8" fill="#A855F7" opacity="0.4"/>
+      {/* Sparkles */}
+      <circle cx="15" cy="20" r="2" fill="#F5F3FF" opacity="0.8"/>
+      <circle cx="55" cy="25" r="1.5" fill="#F5F3FF" opacity="0.7"/>
+      <circle cx="20" cy="50" r="1.5" fill="#DDD6FE" opacity="0.8"/>
+      <circle cx="50" cy="50" r="2" fill="#E0E7FF" opacity="0.6"/>
+    </g>
+  </svg>
+);
+
+// Trap Target - "Skull Curse"
+export const GhibliTrap = () => (
+  <svg viewBox="0 0 65 70" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <defs>
+      <linearGradient id="trapGrad" x1="32" y1="10" x2="32" y2="65">
+        <stop offset="0%" stopColor="#FCA5A5" />
+        <stop offset="100%" stopColor="#DC2626" />
+      </linearGradient>
+      <filter id="trapGlow">
+        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#trapGlow)">
+      {/* Skull shape */}
+      <ellipse cx="32" cy="30" rx="18" ry="20" fill="url(#trapGrad)" stroke="#991B1B" strokeWidth="2"/>
+      {/* Eye sockets */}
+      <ellipse cx="24" cy="27" rx="5" ry="7" fill="#450A0A"/>
+      <ellipse cx="40" cy="27" rx="5" ry="7" fill="#450A0A"/>
+      {/* Eye glow */}
+      <circle cx="24" cy="26" r="2" fill="#DC2626" opacity="0.8"/>
+      <circle cx="40" cy="26" r="2" fill="#DC2626" opacity="0.8"/>
+      {/* Nose hole */}
+      <path d="M30 36 L32 40 L34 36 Z" fill="#450A0A"/>
+      {/* Teeth */}
+      <path d="M20 45 L44 45" stroke="#450A0A" strokeWidth="2"/>
+      <path d="M22 45 L22 48" stroke="#450A0A" strokeWidth="1.5"/>
+      <path d="M27 45 L27 48" stroke="#450A0A" strokeWidth="1.5"/>
+      <path d="M32 45 L32 48" stroke="#450A0A" strokeWidth="1.5"/>
+      <path d="M37 45 L37 48" stroke="#450A0A" strokeWidth="1.5"/>
+      <path d="M42 45 L42 48" stroke="#450A0A" strokeWidth="1.5"/>
+      {/* Danger aura */}
+      <circle cx="32" cy="30" r="28" fill="none" stroke="#DC2626" strokeWidth="1" opacity="0.3" strokeDasharray="4 4"/>
+      {/* Crossed bones hint */}
+      <path d="M10 55 L18 60" stroke="#FCA5A5" strokeWidth="2" opacity="0.6" strokeLinecap="round"/>
+      <path d="M10 60 L18 55" stroke="#FCA5A5" strokeWidth="2" opacity="0.6" strokeLinecap="round"/>
+      <path d="M46 55 L54 60" stroke="#FCA5A5" strokeWidth="2" opacity="0.6" strokeLinecap="round"/>
+      <path d="M46 60 L54 55" stroke="#FCA5A5" strokeWidth="2" opacity="0.6" strokeLinecap="round"/>
+    </g>
+  </svg>
+);
+
+// Oyster Omelet Target - "Egg Shield"
+export const GhibliOysterOmelet = () => (
+  <svg viewBox="0 0 70 65" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <defs>
+      <radialGradient id="omeletGrad" cx="50%" cy="40%">
+        <stop offset="0%" stopColor="#FEF3C7" />
+        <stop offset="100%" stopColor="#FCD34D" />
+      </radialGradient>
+      <filter id="omeletGlow">
+        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#omeletGlow)">
+      {/* Omelet base */}
+      <ellipse cx="35" cy="35" rx="28" ry="25" fill="url(#omeletGrad)" stroke="#F59E0B" strokeWidth="2"/>
+      {/* Texture bubbles */}
+      <circle cx="22" cy="28" r="4" fill="#FDE68A" opacity="0.6"/>
+      <circle cx="35" cy="25" r="5" fill="#FDE68A" opacity="0.5"/>
+      <circle cx="45" cy="30" r="3.5" fill="#FDE68A" opacity="0.6"/>
+      <circle cx="28" cy="40" r="3" fill="#FDE68A" opacity="0.5"/>
+      <circle cx="42" cy="42" r="4" fill="#FDE68A" opacity="0.6"/>
+      {/* Oyster pieces */}
+      <ellipse cx="25" cy="35" rx="4" ry="3" fill="#9CA3AF" stroke="#6B7280" strokeWidth="1"/>
+      <ellipse cx="38" cy="37" rx="3.5" ry="2.5" fill="#9CA3AF" stroke="#6B7280" strokeWidth="1"/>
+      <ellipse cx="32" cy="42" rx="3" ry="2" fill="#9CA3AF" stroke="#6B7280" strokeWidth="1"/>
+      {/* Shield glint lines */}
+      <path d="M15 20 L20 25" stroke="#FEF9C3" strokeWidth="2" opacity="0.7" strokeLinecap="round"/>
+      <path d="M50 18 L55 23" stroke="#FEF9C3" strokeWidth="2" opacity="0.7" strokeLinecap="round"/>
+      {/* Protective aura */}
+      <ellipse cx="35" cy="35" rx="30" ry="27" fill="none" stroke="#60A5FA" strokeWidth="1.5" opacity="0.4" strokeDasharray="3 3"/>
+    </g>
+  </svg>
+);
+
+// Shaved Ice Target - "Frost Spirit"
+export const GhibliShavedIce = () => (
+  <svg viewBox="0 0 65 70" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <defs>
+      <linearGradient id="iceGrad" x1="32" y1="10" x2="32" y2="60">
+        <stop offset="0%" stopColor="#E0F2FE" />
+        <stop offset="100%" stopColor="#22D3EE" />
+      </radialGradient>
+      <filter id="iceGlow">
+        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#iceGlow)">
+      {/* Cup */}
+      <path d="M20 25 L16 55 C16 58 18 60 22 60 L42 60 C46 60 48 58 48 55 L44 25 Z" 
+        fill="#FFF7ED" stroke="#FB923C" strokeWidth="1.5"/>
+      {/* Shaved ice mound */}
+      <ellipse cx="32" cy="25" rx="16" ry="12" fill="url(#iceGrad)" stroke="#06B6D4" strokeWidth="1.5"/>
+      <ellipse cx="28" cy="18" rx="10" ry="8" fill="#E0F2FE" stroke="#22D3EE" strokeWidth="1"/>
+      <ellipse cx="36" cy="20" rx="8" ry="6" fill="#BAE6FD" stroke="#0EA5E9" strokeWidth="1"/>
+      {/* Rainbow syrup drizzle */}
+      <path d="M25 22 Q28 28 26 35" stroke="#F472B6" strokeWidth="1.5" opacity="0.6" strokeLinecap="round"/>
+      <path d="M32 20 Q34 26 32 33" stroke="#A78BFA" strokeWidth="1.5" opacity="0.6" strokeLinecap="round"/>
+      <path d="M38 22 Q36 28 38 35" stroke="#FBBF24" strokeWidth="1.5" opacity="0.6" strokeLinecap="round"/>
+      {/* Ice crystals */}
+      <path d="M24 15 L26 15 M25 14 L25 16" stroke="#DBEAFE" strokeWidth="1" opacity="0.8"/>
+      <path d="M40 16 L42 16 M41 15 L41 17" stroke="#DBEAFE" strokeWidth="1" opacity="0.8"/>
+      <path d="M30 12 L32 12 M31 11 L31 13" stroke="#F0F9FF" strokeWidth="1" opacity="0.8"/>
+      {/* Frost aura */}
+      <circle cx="32" cy="20" r="22" fill="none" stroke="#67E8F9" strokeWidth="1" opacity="0.3" strokeDasharray="2 2"/>
+    </g>
+  </svg>
+);
+
+// Fried Chicken Target - "Greasy Drumstick"
+export const GhibliFriedChicken = () => (
+  <svg viewBox="0 0 60 75" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <defs>
+      <linearGradient id="chickenGrad" x1="30" y1="15" x2="30" y2="60">
+        <stop offset="0%" stopColor="#FBBF24" />
+        <stop offset="100%" stopColor="#D97706" />
+      </linearGradient>
+      <filter id="chickenGlow">
+        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#chickenGlow)">
+      {/* Drumstick meat */}
+      <ellipse cx="30" cy="35" rx="16" ry="20" fill="url(#chickenGrad)" stroke="#92400E" strokeWidth="2"/>
+      {/* Crispy coating texture */}
+      <circle cx="22" cy="28" r="2.5" fill="#FDE68A" opacity="0.7"/>
+      <circle cx="30" cy="25" r="3" fill="#FDE68A" opacity="0.6"/>
+      <circle cx="38" cy="30" r="2" fill="#FDE68A" opacity="0.7"/>
+      <circle cx="25" cy="38" r="2.5" fill="#FDE047" opacity="0.6"/>
+      <circle cx="35" cy="40" r="2.5" fill="#FDE047" opacity="0.7"/>
+      <circle cx="28" cy="48" r="2" fill="#FEF3C7" opacity="0.6"/>
+      {/* Bone handle */}
+      <ellipse cx="30" cy="60" rx="5" ry="8" fill="#F3E8D7" stroke="#D4A574" strokeWidth="1.5"/>
+      <ellipse cx="30" cy="68" rx="6" ry="4" fill="#F3E8D7" stroke="#D4A574" strokeWidth="1.5"/>
+      {/* Grease drips */}
+      <ellipse cx="18" cy="50" rx="3" ry="2" fill="#F59E0B" opacity="0.5"/>
+      <ellipse cx="42" cy="52" rx="2.5" ry="1.5" fill="#F59E0B" opacity="0.5"/>
+      <path d="M20 52 Q19 56 20 58" stroke="#F59E0B" strokeWidth="1.5" opacity="0.4" strokeLinecap="round"/>
+      <path d="M40 54 Q41 57 40 59" stroke="#F59E0B" strokeWidth="1.5" opacity="0.4" strokeLinecap="round"/>
+      {/* Shine highlight */}
+      <ellipse cx="25" cy="32" rx="6" ry="8" fill="#FEF3C7" opacity="0.4"/>
+    </g>
+  </svg>
+);
+
+// Bubble Tea Target - "Sweet Sip"
+export const GhibliBubbleTea = () => (
+  <svg viewBox="0 0 60 75" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <defs>
+      <linearGradient id="bubbleTeaGrad" x1="30" y1="15" x2="30" y2="65">
+        <stop offset="0%" stopColor="#FBCFE8" />
+        <stop offset="100%" stopColor="#EC4899" />
+      </linearGradient>
+      <filter id="bubbleTeaGlow">
+        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#bubbleTeaGlow)">
+      {/* Cup body */}
+      <path d="M20 20 L18 58 C18 61 20 63 23 63 L37 63 C40 63 42 61 42 58 L40 20 Z" 
+        fill="url(#bubbleTeaGrad)" stroke="#BE185D" strokeWidth="1.5"/>
+      {/* Lid */}
+      <ellipse cx="30" cy="20" rx="11" ry="4" fill="#FDE047" stroke="#EAB308" strokeWidth="1"/>
+      {/* Dome lid top */}
+      <ellipse cx="30" cy="18" rx="9" ry="3" fill="#FEF3C7" stroke="#EAB308" strokeWidth="1"/>
+      {/* Straw */}
+      <rect x="27" y="8" width="3" height="50" rx="1.5" fill="#A855F7" opacity="0.8"/>
+      {/* Tapioca pearls */}
+      <circle cx="24" cy="52" r="3" fill="#1F2937" opacity="0.8"/>
+      <circle cx="32" cy="55" r="2.5" fill="#1F2937" opacity="0.7"/>
+      <circle cx="28" cy="48" r="2" fill="#374151" opacity="0.7"/>
+      <circle cx="36" cy="50" r="2.5" fill="#1F2937" opacity="0.8"/>
+      {/* Happy face */}
+      <circle cx="24" cy="35" r="1.5" fill="#BE185D"/>
+      <circle cx="36" cy="35" r="1.5" fill="#BE185D"/>
+      <path d="M26 40 Q30 43 34 40" stroke="#BE185D" strokeWidth="2" strokeLinecap="round" fill="none"/>
+      {/* Sparkles */}
+      <circle cx="12" cy="30" r="1.5" fill="#FDE68A" opacity="0.8"/>
+      <circle cx="48" cy="35" r="2" fill="#FDE68A" opacity="0.7"/>
+      <circle cx="15" cy="45" r="1" fill="#FBBF24" opacity="0.8"/>
+    </g>
+  </svg>
+);
+
+// Squid Stick Target - "Tentacle Twist"
+export const GhibliSquid = () => (
+  <svg viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <defs>
+      <linearGradient id="squidGrad" x1="30" y1="15" x2="30" y2="55">
+        <stop offset="0%" stopColor="#FED7AA" />
+        <stop offset="100%" stopColor="#FB923C" />
+      </linearGradient>
+      <filter id="squidGlow">
+        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#squidGlow)">
+      {/* Squid body/head */}
+      <ellipse cx="30" cy="28" rx="14" ry="18" fill="url(#squidGrad)" stroke="#C2410C" strokeWidth="2"/>
+      {/* Grilled marks */}
+      <path d="M18 22 L42 22" stroke="#92400E" strokeWidth="1.5" opacity="0.6"/>
+      <path d="M18 28 L42 28" stroke="#92400E" strokeWidth="1.5" opacity="0.6"/>
+      <path d="M18 34 L42 34" stroke="#92400E" strokeWidth="1.5" opacity="0.6"/>
+      {/* Tentacles (wavy) */}
+      <path d="M22 45 Q20 52 22 58 Q24 64 22 70" stroke="url(#squidGrad)" strokeWidth="4" strokeLinecap="round"/>
+      <path d="M26 46 Q24 53 26 59 Q28 65 26 71" stroke="url(#squidGrad)" strokeWidth="4" strokeLinecap="round"/>
+      <path d="M30 46 Q28 53 30 59 Q32 65 30 72" stroke="url(#squidGrad)" strokeWidth="4" strokeLinecap="round"/>
+      <path d="M34 46 Q36 53 34 59 Q32 65 34 71" stroke="url(#squidGrad)" strokeWidth="4" strokeLinecap="round"/>
+      <path d="M38 45 Q40 52 38 58 Q36 64 38 70" stroke="url(#squidGrad)" strokeWidth="4" strokeLinecap="round"/>
+      {/* Suckers on tentacles */}
+      <circle cx="22" cy="55" r="2" fill="#EA580C" opacity="0.6"/>
+      <circle cx="26" cy="57" r="1.5" fill="#EA580C" opacity="0.6"/>
+      <circle cx="30" cy="58" r="2" fill="#EA580C" opacity="0.6"/>
+      <circle cx="34" cy="57" r="1.5" fill="#EA580C" opacity="0.6"/>
+      <circle cx="38" cy="55" r="2" fill="#EA580C" opacity="0.6"/>
+      {/* Eyes */}
+      <circle cx="24" cy="24" r="2" fill="#1F2937"/>
+      <circle cx="36" cy="24" r="2" fill="#1F2937"/>
+      <circle cx="25" cy="23" r="1" fill="#FFF" opacity="0.8"/>
+      <circle cx="37" cy="23" r="1" fill="#FFF" opacity="0.8"/>
+      {/* Skewer stick */}
+      <rect x="28" y="70" width="4" height="8" rx="1" fill="#92400E"/>
+    </g>
+  </svg>
+);
+
+// Signboard Target - "Lucky Lantern Sign"
+export const GhibliSignboard = () => (
+  <svg viewBox="0 0 80 85" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <defs>
+      <linearGradient id="signGrad" x1="40" y1="20" x2="40" y2="70">
+        <stop offset="0%" stopColor="#FEF3C7" />
+        <stop offset="100%" stopColor="#FBBF24" />
+      </linearGradient>
+      <filter id="signGlow">
+        <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <g filter="url(#signGlow)">
+      {/* Hanging string */}
+      <path d="M40 5 L40 15" stroke="#92400E" strokeWidth="2" strokeLinecap="round"/>
+      {/* Lantern top cap */}
+      <ellipse cx="40" cy="15" rx="12" ry="4" fill="#DC2626" stroke="#991B1B" strokeWidth="1.5"/>
+      {/* Main lantern body */}
+      <ellipse cx="40" cy="45" rx="24" ry="28" fill="url(#signGrad)" stroke="#F59E0B" strokeWidth="2"/>
+      {/* Red decorative bands */}
+      <ellipse cx="40" cy="25" rx="22" ry="3" fill="#DC2626" stroke="#991B1B" strokeWidth="1"/>
+      <ellipse cx="40" cy="65" rx="22" ry="3" fill="#DC2626" stroke="#991B1B" strokeWidth="1"/>
+      {/* Chinese character for "luck" (simplified) */}
+      <path d="M35 38 L45 38 M40 35 L40 52 M32 45 L48 45" stroke="#DC2626" strokeWidth="3" strokeLinecap="round"/>
+      {/* Vertical accent lines */}
+      <path d="M28 35 L28 55" stroke="#F59E0B" strokeWidth="1" opacity="0.4"/>
+      <path d="M52 35 L52 55" stroke="#F59E0B" strokeWidth="1" opacity="0.4"/>
+      {/* Lantern bottom tassel */}
+      <ellipse cx="40" cy="73" rx="6" ry="3" fill="#DC2626" stroke="#991B1B" strokeWidth="1"/>
+      <path d="M38 76 Q37 80 38 82" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M40 76 Q39 81 40 84" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M42 76 Q43 80 42 82" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"/>
+      {/* Golden sparkles */}
+      <circle cx="20" cy="35" r="2" fill="#FEF3C7" opacity="0.9"/>
+      <circle cx="60" cy="40" r="2.5" fill="#FDE68A" opacity="0.9"/>
+      <circle cx="25" cy="55" r="1.5" fill="#FEF3C7" opacity="0.8"/>
+      <circle cx="55" cy="50" r="2" fill="#FDE68A" opacity="0.9"/>
+      {/* Lucky glow aura */}
+      <ellipse cx="40" cy="45" rx="30" ry="33" fill="none" stroke="#FCD34D" strokeWidth="1.5" opacity="0.4" strokeDasharray="3 3"/>
+    </g>
+  </svg>
+);
