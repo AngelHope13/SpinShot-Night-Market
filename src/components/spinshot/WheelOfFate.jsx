@@ -55,8 +55,11 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
       setIsSpinning(false);
       sounds.wheelStop();
       // Calculate which segment is under the pointer at the top
+      // The pointer is at -90 degrees (top), segments start at -90 for index 0
       const normalizedRotation = ((newRotation % 360) + 360) % 360;
-      const selectedIndex = Math.floor((360 - normalizedRotation + 90) / SEGMENT_ANGLE) % WHEEL_EFFECTS.length;
+      const pointerOffset = 90; // Pointer is at top (90 degrees before 0)
+      const adjustedAngle = (normalizedRotation + pointerOffset) % 360;
+      const selectedIndex = Math.floor(adjustedAngle / SEGMENT_ANGLE) % WHEEL_EFFECTS.length;
       const effect = WHEEL_EFFECTS[selectedIndex];
       onEffectSelected(effect);
       setShowResult(true);
