@@ -25,7 +25,7 @@ export const useSounds = () => {
     };
   }, []);
 
-  // Background music - Howl's Moving Castle inspired ambient soundtrack
+  // Background music - Upbeat arcade-style energetic track
   useEffect(() => {
     const ctx = audioContextRef.current;
     const settings = settingsContextRef.current?.settings;
@@ -41,44 +41,68 @@ export const useSounds = () => {
       return;
     }
 
-    const musicVolume = (settings.musicVolume || 0.5) * 0.12;
+    const musicVolume = (settings.musicVolume || 0.5) * 0.08;
 
-    // Gentle, magical melody inspired by Ghibli
+    // Fast-paced, energetic arcade melody
     const melody = [
-      { freq: 523.25, time: 0, duration: 0.7 },     // C5
-      { freq: 587.33, time: 0.8, duration: 0.7 },   // D5
-      { freq: 659.25, time: 1.6, duration: 0.7 },   // E5
-      { freq: 698.46, time: 2.4, duration: 0.7 },   // F5
-      { freq: 783.99, time: 3.2, duration: 0.9 },   // G5
-      { freq: 698.46, time: 4.2, duration: 0.7 },   // F5
-      { freq: 659.25, time: 5.0, duration: 0.7 },   // E5
-      { freq: 587.33, time: 5.8, duration: 0.7 },   // D5
-      { freq: 523.25, time: 6.6, duration: 1.0 },   // C5
+      { freq: 659.25, time: 0, duration: 0.2 },      // E5
+      { freq: 659.25, time: 0.25, duration: 0.2 },   // E5
+      { freq: 783.99, time: 0.5, duration: 0.2 },    // G5
+      { freq: 987.77, time: 0.75, duration: 0.3 },   // B5
+      { freq: 880.00, time: 1.1, duration: 0.2 },    // A5
+      { freq: 783.99, time: 1.35, duration: 0.2 },   // G5
+      { freq: 659.25, time: 1.6, duration: 0.3 },    // E5
+      { freq: 523.25, time: 2.0, duration: 0.2 },    // C5
+      { freq: 587.33, time: 2.25, duration: 0.2 },   // D5
+      { freq: 659.25, time: 2.5, duration: 0.2 },    // E5
+      { freq: 783.99, time: 2.75, duration: 0.4 },   // G5
     ];
 
-    const harmony = [
-      { freq: 261.63, time: 0, duration: 1.6 },     // C4
-      { freq: 329.63, time: 1.6, duration: 1.6 },   // E4
-      { freq: 349.23, time: 3.2, duration: 1.6 },   // F4
-      { freq: 329.63, time: 4.8, duration: 1.6 },   // E4
-      { freq: 261.63, time: 6.4, duration: 1.2 },   // C4
+    // Bass line for rhythm
+    const bass = [
+      { freq: 130.81, time: 0, duration: 0.4 },      // C3
+      { freq: 146.83, time: 0.5, duration: 0.4 },    // D3
+      { freq: 164.81, time: 1.0, duration: 0.4 },    // E3
+      { freq: 130.81, time: 1.5, duration: 0.4 },    // C3
+      { freq: 196.00, time: 2.0, duration: 0.4 },    // G3
+      { freq: 164.81, time: 2.5, duration: 0.4 },    // E3
+    ];
+
+    // Arpeggio for texture
+    const arp = [
+      { freq: 523.25, time: 0, duration: 0.15 },
+      { freq: 659.25, time: 0.15, duration: 0.15 },
+      { freq: 783.99, time: 0.3, duration: 0.15 },
+      { freq: 659.25, time: 0.45, duration: 0.15 },
+      { freq: 523.25, time: 0.75, duration: 0.15 },
+      { freq: 659.25, time: 0.9, duration: 0.15 },
+      { freq: 783.99, time: 1.05, duration: 0.15 },
+      { freq: 659.25, time: 1.2, duration: 0.15 },
+      { freq: 523.25, time: 1.5, duration: 0.15 },
+      { freq: 659.25, time: 1.65, duration: 0.15 },
+      { freq: 783.99, time: 1.8, duration: 0.15 },
+      { freq: 659.25, time: 1.95, duration: 0.15 },
+      { freq: 523.25, time: 2.25, duration: 0.15 },
+      { freq: 659.25, time: 2.4, duration: 0.15 },
+      { freq: 783.99, time: 2.55, duration: 0.15 },
+      { freq: 659.25, time: 2.7, duration: 0.15 },
     ];
 
     const playMusicLoop = () => {
       const startTime = ctx.currentTime;
       const oscillators = [];
 
-      // Play melody notes
+      // Melody (bright and forward)
       melody.forEach(note => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         
-        osc.type = 'sine';
+        osc.type = 'square';
         osc.frequency.value = note.freq;
         
         gain.gain.setValueAtTime(0, startTime + note.time);
-        gain.gain.linearRampToValueAtTime(musicVolume * 0.4, startTime + note.time + 0.05);
-        gain.gain.setValueAtTime(musicVolume * 0.4, startTime + note.time + note.duration - 0.1);
+        gain.gain.linearRampToValueAtTime(musicVolume * 0.5, startTime + note.time + 0.02);
+        gain.gain.setValueAtTime(musicVolume * 0.5, startTime + note.time + note.duration - 0.05);
         gain.gain.linearRampToValueAtTime(0, startTime + note.time + note.duration);
         
         osc.connect(gain);
@@ -88,8 +112,8 @@ export const useSounds = () => {
         oscillators.push(osc);
       });
 
-      // Play harmony (softer, lower)
-      harmony.forEach(note => {
+      // Bass (punchy and rhythmic)
+      bass.forEach(note => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         
@@ -97,9 +121,27 @@ export const useSounds = () => {
         osc.frequency.value = note.freq;
         
         gain.gain.setValueAtTime(0, startTime + note.time);
-        gain.gain.linearRampToValueAtTime(musicVolume * 0.2, startTime + note.time + 0.1);
-        gain.gain.setValueAtTime(musicVolume * 0.2, startTime + note.time + note.duration - 0.2);
-        gain.gain.linearRampToValueAtTime(0, startTime + note.time + note.duration);
+        gain.gain.linearRampToValueAtTime(musicVolume * 0.4, startTime + note.time + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + note.time + note.duration);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime + note.time);
+        osc.stop(startTime + note.time + note.duration);
+        oscillators.push(osc);
+      });
+
+      // Arpeggio (subtle background texture)
+      arp.forEach(note => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.value = note.freq;
+        
+        gain.gain.setValueAtTime(0, startTime + note.time);
+        gain.gain.linearRampToValueAtTime(musicVolume * 0.15, startTime + note.time + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + note.time + note.duration);
         
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -114,8 +156,8 @@ export const useSounds = () => {
     // Start music immediately
     playMusicLoop();
 
-    // Loop every 8 seconds
-    const interval = setInterval(playMusicLoop, 8000);
+    // Loop every 3 seconds for faster-paced feel
+    const interval = setInterval(playMusicLoop, 3000);
     musicIntervalsRef.current.push(interval);
 
     return () => {
@@ -153,23 +195,26 @@ export const useSounds = () => {
 
   const dartThrow = useCallback(() => {
     const ctx = audioContextRef.current;
-    if (!ctx) return;
+    const settings = settingsContextRef.current?.settings;
+    if (!ctx || (settings && !settings.soundEnabled)) return;
 
-    // Whoosh sound
+    const volume = (settings?.soundVolume || 0.7) * 0.2;
+
+    // Sharp whoosh sound
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
     oscillator.connect(gainNode);
     gainNode.connect(ctx.destination);
 
     oscillator.type = 'sawtooth';
-    oscillator.frequency.setValueAtTime(400, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(600, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.08);
     
-    gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+    gainNode.gain.setValueAtTime(volume, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
 
     oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.1);
+    oscillator.stop(ctx.currentTime + 0.08);
   }, []);
 
   const targetHit = useCallback((points = 100) => {
@@ -216,26 +261,53 @@ export const useSounds = () => {
   }, []);
 
   const targetMiss = useCallback(() => {
-    playTone(150, 0.15, 'sawtooth', 0.1);
-  }, [playTone]);
+    const ctx = audioContextRef.current;
+    const settings = settingsContextRef.current?.settings;
+    if (!ctx || (settings && !settings.soundEnabled)) return;
+
+    const volume = (settings?.soundVolume || 0.7) * 0.2;
+
+    // Sad descending tone
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.15);
+    
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.15);
+  }, []);
 
   const buttonClick = useCallback(() => {
     const ctx = audioContextRef.current;
-    if (!ctx) return;
+    const settings = settingsContextRef.current?.settings;
+    if (!ctx || (settings && !settings.soundEnabled)) return;
 
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    const volume = (settings?.soundVolume || 0.7) * 0.25;
 
-    oscillator.type = 'sine';
-    oscillator.frequency.value = 800;
-    
-    gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+    // Crisp button click with two tones
+    [1000, 1200].forEach((freq, i) => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
 
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.08);
+      oscillator.type = 'sine';
+      oscillator.frequency.value = freq;
+      
+      const startTime = ctx.currentTime + (i * 0.03);
+      gainNode.gain.setValueAtTime(volume * (1 - i * 0.3), startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.06);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.06);
+    });
   }, []);
 
   const wheelSpin = useCallback(() => {
