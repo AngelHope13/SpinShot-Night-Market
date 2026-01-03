@@ -24,28 +24,42 @@ export default function MusicUpload() {
     setSuccess(false);
 
     try {
+      console.log('Starting upload...');
       const response = await base44.integrations.Core.UploadFile({ file });
-      console.log('Full upload response:', JSON.stringify(response, null, 2));
-      
+      console.log('Upload response:', response);
+
       // The integration returns { file_url: string }
-      const fileUrl = response.file_url;
-      
+      const fileUrl = response?.file_url || response?.data?.file_url;
+
       if (!fileUrl) {
         console.error('No file_url in response:', response);
-        throw new Error('Upload succeeded but no file URL was returned');
+        throw new Error('Upload succeeded but no file URL was returned. Response: ' + JSON.stringify(response));
       }
-      
-      console.log('Saving music URL to localStorage:', fileUrl);
+
+      console.log('File uploaded successfully! URL:', fileUrl);
       localStorage.setItem('spinshot-music-url', fileUrl);
       setCurrentUrl(fileUrl);
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+
+      // Auto-reload after successful upload
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Upload failed: ' + (error.message || 'Unknown error'));
+      alert('Upload failed: ' + (error.message || 'Unknown error. Check console for details.'));
     } finally {
       setUploading(false);
     }
+  };
+
+  const convertGoogleDriveUrl = (url) => {
+    // Convert Google Drive sharing link to direct download link
+    const match = url.match(/\/file\/d\/([^/]+)/);
+    if (match && match[1]) {
+      return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    }
+    return url;
   };
 
   const handleUrlSubmit = () => {
@@ -54,8 +68,16 @@ export default function MusicUpload() {
       return;
     }
     
-    localStorage.setItem('spinshot-music-url', urlInput.trim());
-    setCurrentUrl(urlInput.trim());
+    let finalUrl = urlInput.trim();
+    
+    // Auto-convert Google Drive links
+    if (finalUrl.includes('drive.google.com')) {
+      finalUrl = convertGoogleDriveUrl(finalUrl);
+      console.log('Converted Google Drive URL to:', finalUrl);
+    }
+    
+    localStorage.setItem('spinshot-music-url', finalUrl);
+    setCurrentUrl(finalUrl);
     setUrlInput('');
     setSuccess(true);
     setTimeout(() => setSuccess(false), 2000);
@@ -172,8 +194,15 @@ export default function MusicUpload() {
             </Button>
           </div>
 
-          <div className="mt-6 text-center text-purple-400 text-sm">
-            💡 Tip: After uploading, reload the game page to hear your music
+          <div className="mt-6 space-y-2">
+            <div className="text-center text-purple-400 text-sm">
+              💡 Tip: Use direct MP3 links or upload files
+            </div>
+            {currentUrl && currentUrl.includes('drive.google.com') && (
+              <div className="text-center text-yellow-400 text-xs">
+                ⚠️ Google Drive link detected - converted to direct download
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
