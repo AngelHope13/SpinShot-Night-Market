@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Skull, RotateCcw, Home, Star, Trophy } from 'lucide-react';
+import { useSounds } from './useSounds';
 
 export default function GameOver({ totalScore, levelReached, onPlayAgain, onMenu }) {
+  const sounds = useSounds();
+  
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <motion.div
@@ -75,7 +78,10 @@ export default function GameOver({ totalScore, levelReached, onPlayAgain, onMenu
             className="mt-8 space-y-3"
           >
             <motion.button
-              onClick={onPlayAgain}
+              onClick={() => {
+                sounds.buttonClick();
+                onPlayAgain();
+              }}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="w-full px-6 py-4 bg-gradient-to-r from-pink-500 via-orange-400 to-yellow-400 rounded-xl font-bold text-lg text-white shadow-xl shadow-pink-500/30 flex items-center justify-center gap-2"
@@ -85,7 +91,10 @@ export default function GameOver({ totalScore, levelReached, onPlayAgain, onMenu
             </motion.button>
 
             <motion.button
-              onClick={onMenu}
+              onClick={() => {
+                sounds.buttonClick();
+                onMenu();
+              }}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="w-full px-6 py-3 bg-purple-800/50 backdrop-blur border border-purple-500/30 rounded-xl font-semibold text-purple-200 hover:bg-purple-700/50 transition-colors flex items-center justify-center gap-2"

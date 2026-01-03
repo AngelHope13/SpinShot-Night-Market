@@ -11,6 +11,7 @@ import {
   GhibliCross, 
   GhibliSmell 
 } from './GhibliIcons';
+import { useSounds } from './useSounds';
 
 const WHEEL_EFFECTS = [
   { id: 'x2', name: 'x2 Multiplier', description: 'Score is doubled this round', icon: Sparkles, ghibliIcon: GhibliSparkle, color: '#ffd93d', type: 'buff' },
@@ -31,12 +32,14 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
   const [showResult, setShowResult] = useState(false);
   const [sparks, setSparks] = useState([]);
   const spinCount = useRef(0);
+  const sounds = useSounds();
 
   const spin = () => {
     if (isSpinning || selectedEffect) return;
     
     setIsSpinning(true);
     setShowResult(false);
+    sounds.wheelSpin();
     
     // Random number of full rotations (5-8) plus random segment
     const fullRotations = 5 + Math.floor(Math.random() * 4);
@@ -50,6 +53,7 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
     // After spin completes
     setTimeout(() => {
       setIsSpinning(false);
+      sounds.wheelStop();
       const selectedIndex = (WHEEL_EFFECTS.length - Math.floor(((newRotation % 360) / SEGMENT_ANGLE))) % WHEEL_EFFECTS.length;
       const effect = WHEEL_EFFECTS[selectedIndex];
       onEffectSelected(effect);
@@ -257,7 +261,10 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
 
         {selectedEffect && (
           <motion.button
-            onClick={onStartRound}
+            onClick={() => {
+              sounds.buttonClick();
+              onStartRound();
+            }}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             whileHover={{ scale: 1.05 }}

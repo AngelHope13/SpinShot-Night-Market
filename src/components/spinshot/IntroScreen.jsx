@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, HelpCircle, Users } from 'lucide-react';
+import { useSounds } from './useSounds';
 
 const Lantern = ({ delay, x }) => (
   <motion.div
@@ -35,6 +36,7 @@ const NeonGlow = () => (
 
 export default function IntroScreen({ onStart, onHowToPlay, onCredits }) {
   const [particles, setParticles] = useState([]);
+  const sounds = useSounds();
 
   useEffect(() => {
     const newParticles = Array.from({ length: 20 }, (_, i) => ({
@@ -114,7 +116,10 @@ export default function IntroScreen({ onStart, onHowToPlay, onCredits }) {
         className="mt-12 flex flex-col gap-4 z-10"
       >
         <motion.button
-          onClick={onStart}
+          onClick={() => {
+            sounds.buttonClick();
+            onStart();
+          }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="group relative px-12 py-4 bg-gradient-to-r from-pink-500 via-orange-400 to-yellow-400 rounded-2xl font-bold text-lg text-white shadow-xl shadow-pink-500/30 overflow-hidden"
@@ -133,7 +138,10 @@ export default function IntroScreen({ onStart, onHowToPlay, onCredits }) {
 
         <div className="flex gap-3">
           <motion.button
-            onClick={onHowToPlay}
+            onClick={() => {
+              sounds.buttonClick();
+              onHowToPlay();
+            }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="flex-1 px-6 py-3 bg-purple-800/50 backdrop-blur border border-purple-500/30 rounded-xl font-semibold text-purple-200 hover:bg-purple-700/50 transition-colors flex items-center justify-center gap-2"
@@ -143,7 +151,10 @@ export default function IntroScreen({ onStart, onHowToPlay, onCredits }) {
           </motion.button>
           
           <motion.button
-            onClick={onCredits}
+            onClick={() => {
+              sounds.buttonClick();
+              onCredits();
+            }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="flex-1 px-6 py-3 bg-purple-800/50 backdrop-blur border border-purple-500/30 rounded-xl font-semibold text-purple-200 hover:bg-purple-700/50 transition-colors flex items-center justify-center gap-2"

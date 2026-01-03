@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Heart, Sparkles } from 'lucide-react';
+import { useSounds } from './useSounds';
 
 export default function Credits({ onBack }) {
+  const sounds = useSounds();
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <motion.div
@@ -57,7 +60,10 @@ export default function Credits({ onBack }) {
         </motion.div>
 
         <motion.button
-          onClick={onBack}
+          onClick={() => {
+            sounds.buttonClick();
+            onBack();
+          }}
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.6 }}

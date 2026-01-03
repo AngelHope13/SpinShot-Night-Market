@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, XCircle, ArrowRight, RotateCcw, Home, Star } from 'lucide-react';
+import { useSounds } from './useSounds';
 
 export default function RoundResults({ level, roundScore, totalScore, cleared, isBossLevel, onNextLevel, onRetry, onMenu }) {
+  const sounds = useSounds();
+
+  useEffect(() => {
+    if (cleared) {
+      sounds.levelComplete();
+    } else {
+      sounds.levelFailed();
+    }
+  }, [cleared, sounds]);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <motion.div
@@ -91,7 +102,10 @@ export default function RoundResults({ level, roundScore, totalScore, cleared, i
           >
             {cleared ? (
               <motion.button
-                onClick={onNextLevel}
+                onClick={() => {
+                  sounds.buttonClick();
+                  onNextLevel();
+                }}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-teal-400 rounded-xl font-bold text-lg text-white shadow-xl shadow-green-500/30 flex items-center justify-center gap-2"
@@ -101,7 +115,10 @@ export default function RoundResults({ level, roundScore, totalScore, cleared, i
               </motion.button>
             ) : (
               <motion.button
-                onClick={onRetry}
+                onClick={() => {
+                  sounds.buttonClick();
+                  onRetry();
+                }}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-red-400 rounded-xl font-bold text-lg text-white shadow-xl shadow-orange-500/30 flex items-center justify-center gap-2"
@@ -112,7 +129,10 @@ export default function RoundResults({ level, roundScore, totalScore, cleared, i
             )}
 
             <motion.button
-              onClick={onMenu}
+              onClick={() => {
+                sounds.buttonClick();
+                onMenu();
+              }}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="w-full px-6 py-3 bg-purple-800/50 backdrop-blur border border-purple-500/30 rounded-xl font-semibold text-purple-200 hover:bg-purple-700/50 transition-colors flex items-center justify-center gap-2"

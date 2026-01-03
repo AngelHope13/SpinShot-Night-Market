@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Clock, Crosshair, Sparkles, Zap, Wind, Gauge, XCircle } from 'lucide-react';
+import { useSounds } from './useSounds';
 
 const TARGETS = [
   { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.35 },
@@ -34,6 +35,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [windOffset, setWindOffset] = useState({ x: 0, y: 0 });
   const arenaRef = useRef(null);
   const gameEndedRef = useRef(false);
+  const sounds = useSounds();
 
   // Speed multiplier based on wheel effect
   const getSpeedMultiplier = () => {
@@ -192,6 +194,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     if (darts <= 0 || gameEndedRef.current) return;
     
     e.stopPropagation();
+    sounds.dartThrow();
     setDarts(prev => prev - 1);
 
     // Rubber darts = no score
@@ -204,6 +207,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     const luckyBonus = wheelEffect?.id === 'lucky' ? 1.5 : 1;
     const points = Math.round(target.points * getScoreMultiplier() * luckyBonus);
     
+    sounds.targetHit(points);
     setRoundScore(prev => prev + points);
     setTargets(prev => prev.filter(t => t.id !== target.id));
     
@@ -214,7 +218,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       text: `+${points}`,
       color: target.type === 'luckycat' ? '#ffd93d' : '#4ade80'
     }]);
-  }, [darts, wheelEffect]);
+  }, [darts, wheelEffect, sounds]);
 
   const handleMiss = useCallback((e) => {
     if (darts <= 0 || gameEndedRef.current) return;
@@ -225,9 +229,11 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     let x = e.clientX - rect.left + windOffset.x;
     let y = e.clientY - rect.top + windOffset.y;
     
+    sounds.dartThrow();
+    sounds.targetMiss();
     setDarts(prev => prev - 1);
     setHitEffects(prev => [...prev, { id: Date.now(), x, y, text: 'MISS', color: '#ef4444' }]);
-  }, [darts, windOffset]);
+  }, [darts, windOffset, sounds]);
 
   // Clean up hit effects
   useEffect(() => {

@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Crown, RotateCcw, Home, Star, Sparkles } from 'lucide-react';
+import { useSounds } from './useSounds';
 
 export default function Victory({ totalScore, onPlayAgain, onMenu }) {
   const [confetti, setConfetti] = useState([]);
+  const sounds = useSounds();
+
+  useEffect(() => {
+    sounds.victory();
+  }, [sounds]);
 
   useEffect(() => {
     const particles = Array.from({ length: 50 }, (_, i) => ({
@@ -149,7 +155,10 @@ export default function Victory({ totalScore, onPlayAgain, onMenu }) {
             className="mt-8 space-y-3"
           >
             <motion.button
-              onClick={onPlayAgain}
+              onClick={() => {
+                sounds.buttonClick();
+                onPlayAgain();
+              }}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="w-full px-6 py-4 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 rounded-xl font-bold text-lg text-white shadow-xl shadow-orange-500/30 flex items-center justify-center gap-2"
@@ -159,7 +168,10 @@ export default function Victory({ totalScore, onPlayAgain, onMenu }) {
             </motion.button>
 
             <motion.button
-              onClick={onMenu}
+              onClick={() => {
+                sounds.buttonClick();
+                onMenu();
+              }}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="w-full px-6 py-3 bg-purple-800/50 backdrop-blur border border-purple-500/30 rounded-xl font-semibold text-purple-200 hover:bg-purple-700/50 transition-colors flex items-center justify-center gap-2"

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, RotateCcw, Target, Trophy } from 'lucide-react';
+import { useSounds } from './useSounds';
 
 const StepCard = ({ number, icon: Icon, title, description, delay }) => (
   <motion.div
@@ -40,6 +41,7 @@ const TargetInfo = ({ emoji, name, description, points, color, delay }) => (
 );
 
 export default function HowToPlay({ onBack, onContinue }) {
+  const sounds = useSounds();
   const targets = [
     { emoji: '🧋', name: 'Milk Tea', description: 'Medium speed, bouncy movement', points: 100, color: 'bg-amber-600' },
     { emoji: '🎈', name: 'Balloon', description: 'Easy target, floats gently', points: 50, color: 'bg-red-500' },
@@ -114,7 +116,10 @@ export default function HowToPlay({ onBack, onContinue }) {
           className="flex gap-4 justify-center"
         >
           <motion.button
-            onClick={onBack}
+            onClick={() => {
+              sounds.buttonClick();
+              onBack();
+            }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="px-8 py-3 bg-purple-800/50 backdrop-blur border border-purple-500/30 rounded-xl font-semibold text-purple-200 hover:bg-purple-700/50 transition-colors flex items-center gap-2"
@@ -124,7 +129,10 @@ export default function HowToPlay({ onBack, onContinue }) {
           </motion.button>
           
           <motion.button
-            onClick={onContinue}
+            onClick={() => {
+              sounds.buttonClick();
+              onContinue();
+            }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="px-8 py-3 bg-gradient-to-r from-pink-500 to-orange-400 rounded-xl font-bold text-white shadow-lg shadow-pink-500/30 flex items-center gap-2"
