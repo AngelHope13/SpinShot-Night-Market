@@ -69,7 +69,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [aimPosition, setAimPosition] = useState(null);
   const [arcPoints, setArcPoints] = useState([]);
   const arenaRef = useRef(null);
-  const projectileSpeed = 15; // pixels per frame - smooth and accurate
+  const projectileSpeed = 70; // pixels per frame - balanced speed and control
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
   const { settings } = useSettings();
