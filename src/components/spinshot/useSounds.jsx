@@ -37,7 +37,7 @@ export const useSounds = () => {
     const customMusicUrl = localStorage.getItem('spinshot-music-url');
 
     // Use custom music if available, otherwise use default ambient track
-    const musicUrl = customMusicUrl || 'https://suno.com/s/m9Jmlwbtx3UONTeo';
+    const musicUrl = customMusicUrl || 'https://drive.google.com/uc?export=download&id=15cEgvYYrTvZGO-7itqVEmuvvrQ50tfwX';
 
     if (!settings?.musicEnabled) {
       if (musicAudioRef.current) {
