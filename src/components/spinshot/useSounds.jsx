@@ -34,7 +34,11 @@ export const useSounds = () => {
     const settings = settingsContextRef.current?.settings;
 
     // Background music URL - calm ambient music similar to Final Fantasy
-    const musicUrl = 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3';
+    // Option 1: Use this ambient track
+    const musicUrl = 'https://cdn.pixabay.com/audio/2022/05/13/audio_1e0e4c00d6.mp3';
+    
+    // Option 2: Upload your own MP3 file and use it like this:
+    // const musicUrl = '/path/to/your-music.mp3';
 
     if (!settings?.musicEnabled) {
       if (musicAudioRef.current) {
