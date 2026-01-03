@@ -3,13 +3,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Clock, Crosshair, Sparkles, Zap, Wind, Gauge, XCircle, Plus, Snowflake, TrendingUp } from 'lucide-react';
 import { useSounds } from './useSounds';
 import { useSettings } from './useSettings';
+import { GhibliMilktea, GhibliBalloon, GhibliStinkyTofu, GhibliLuckyCat, GhibliFortuneLantern } from './GhibliTargets';
 
 const TARGETS = [
-  { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.35 },
-  { type: 'balloon', emoji: '🎈', points: 50, size: 55, spawnChance: 0.35 },
-  { type: 'stinkytofu', emoji: '🤢', points: 150, size: 50, spawnChance: 0.2 },
-  { type: 'luckycat', emoji: '🐱', points: 300, size: 45, spawnChance: 0.1 },
+  { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.35, ghibliComponent: GhibliMilktea },
+  { type: 'balloon', emoji: '🎈', points: 50, size: 70, spawnChance: 0.35, ghibliComponent: GhibliBalloon },
+  { type: 'stinkytofu', emoji: '🤢', points: 150, size: 65, spawnChance: 0.2, ghibliComponent: GhibliStinkyTofu },
+  { type: 'luckycat', emoji: '🐱', points: 300, size: 65, spawnChance: 0.1, ghibliComponent: GhibliLuckyCat },
 ];
+
+const BOSS_TARGET = { 
+  type: 'fortunelantern', 
+  emoji: '🏮', 
+  points: 500, 
+  size: 100, 
+  ghibliComponent: GhibliFortuneLantern 
+};
 
 const EFFECT_ICONS = {
   x2: Sparkles,
@@ -48,15 +57,20 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const sounds = useSounds();
   const { settings } = useSettings();
 
-  const getTargetEmoji = (targetType) => {
+  const renderTargetVisual = (target) => {
+    if (settings.targetSkin === 'ghibli') {
+      const Component = target.ghibliComponent;
+      return Component ? <Component /> : target.emoji;
+    }
+    
     const emojiMap = {
-      default: { milktea: '🧋', balloon: '🎈', stinkytofu: '🤢', luckycat: '🐱' },
-      kawaii: { milktea: '🥤', balloon: '🎀', stinkytofu: '😋', luckycat: '😻' },
-      pixel: { milktea: '🟫', balloon: '🔴', stinkytofu: '🟢', luckycat: '🟡' },
-      minimal: { milktea: '⚪', balloon: '⚫', stinkytofu: '⭕', luckycat: '✨' },
-      bubble: { milktea: '🫧', balloon: '💭', stinkytofu: '🫧', luckycat: '✨' },
+      default: { milktea: '🧋', balloon: '🎈', stinkytofu: '🤢', luckycat: '🐱', fortunelantern: '🏮' },
+      kawaii: { milktea: '🥤', balloon: '🎀', stinkytofu: '😋', luckycat: '😻', fortunelantern: '🎏' },
+      pixel: { milktea: '🟫', balloon: '🔴', stinkytofu: '🟢', luckycat: '🟡', fortunelantern: '🟠' },
+      minimal: { milktea: '⚪', balloon: '⚫', stinkytofu: '⭕', luckycat: '✨', fortunelantern: '⭕' },
+      bubble: { milktea: '🫧', balloon: '💭', stinkytofu: '🫧', luckycat: '✨', fortunelantern: '💭' },
     };
-    return emojiMap[settings.targetSkin]?.[targetType] || emojiMap.default[targetType];
+    return emojiMap[settings.targetSkin]?.[target.type] || emojiMap.default[target.type];
   };
 
   const getCrosshairStyle = () => {
@@ -91,28 +105,54 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     return multiplier;
   };
 
-  // Spawn targets
+  // Spawn targets with level-appropriate scaling
   useEffect(() => {
     const spawnTarget = () => {
       if (gameEndedRef.current) return;
       
-      const rand = Math.random();
-      let cumulative = 0;
-      let selectedTarget = TARGETS[0];
-      
-      for (const target of TARGETS) {
-        cumulative += target.spawnChance;
-        if (rand <= cumulative) {
-          selectedTarget = target;
-          break;
-        }
-      }
-
       const arena = arenaRef.current;
       if (!arena) return;
       
       const rect = arena.getBoundingClientRect();
       const padding = 80;
+      
+      let selectedTarget;
+      
+      // Boss level: spawn Fortune Lantern occasionally
+      if (isBoss && Math.random() < 0.15) {
+        selectedTarget = BOSS_TARGET;
+      } else {
+        // Level-based target distribution
+        let availableTargets = [...TARGETS];
+        
+        // Levels 1-2: Only Milk Tea and Balloon
+        if (level <= 2) {
+          availableTargets = TARGETS.filter(t => t.type === 'milktea' || t.type === 'balloon');
+        }
+        // Levels 3-4: Add Lucky Cat and Stinky Tofu occasionally
+        else if (level <= 4) {
+          const rand = Math.random();
+          if (rand > 0.7) {
+            availableTargets = TARGETS;
+          } else {
+            availableTargets = TARGETS.filter(t => t.type === 'milktea' || t.type === 'balloon');
+          }
+        }
+        
+        const rand = Math.random();
+        let cumulative = 0;
+        const totalChance = availableTargets.reduce((sum, t) => sum + t.spawnChance, 0);
+        
+        for (const target of availableTargets) {
+          cumulative += target.spawnChance / totalChance;
+          if (rand <= cumulative) {
+            selectedTarget = target;
+            break;
+          }
+        }
+        
+        if (!selectedTarget) selectedTarget = availableTargets[0];
+      }
 
       const newTarget = {
         id: Date.now() + Math.random(),
@@ -131,7 +171,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     spawnTarget();
     
     return () => clearInterval(interval);
-  }, []);
+  }, [level, isBoss]);
 
   // Spawn powerups
   useEffect(() => {
@@ -547,7 +587,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                 marginTop: -target.size / 2,
               }}
             >
-              <div className={`w-full h-full flex items-center justify-center text-4xl md:text-5xl transition-transform hover:scale-110 ${target.isPaused || activePowerups['freeze-time'] ? 'animate-bounce' : ''}`}
+              <div className={`w-full h-full flex items-center justify-center transition-transform hover:scale-110 ${target.isPaused || activePowerups['freeze-time'] ? 'animate-bounce' : ''} ${settings.targetSkin === 'ghibli' ? '' : 'text-4xl md:text-5xl'}`}
                 style={{ 
                   filter: activePowerups['freeze-time'] ? 'drop-shadow(0 0 15px rgba(6,182,212,0.8))' : 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
                   ...(settings.targetSkin === 'bubble' && { 
@@ -556,7 +596,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                   })
                 }}
               >
-                {getTargetEmoji(target.type)}
+                {renderTargetVisual(target)}
               </div>
               {target.type === 'luckycat' && (
                 <div className="absolute inset-0 animate-ping">

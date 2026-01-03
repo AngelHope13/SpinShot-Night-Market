@@ -226,7 +226,7 @@ export default function Settings({ onBack }) {
             <Circle className="w-5 h-5 text-pink-400" />
             Target Style
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {targetSkins.map((skin) => (
               <motion.button
                 key={skin.id}
