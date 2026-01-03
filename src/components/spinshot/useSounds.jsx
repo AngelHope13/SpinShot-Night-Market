@@ -37,7 +37,7 @@ export const useSounds = () => {
     const customMusicUrl = localStorage.getItem('spinshot-music-url');
 
     // Use custom music if available, otherwise use default ambient track
-    const musicUrl = customMusicUrl || 'https://cdn.pixabay.com/audio/2022/05/13/audio_1e0e4c00d6.mp3';
+    const musicUrl = customMusicUrl || 'https://suno.com/s/m9Jmlwbtx3UONTeo';
 
     if (!settings?.musicEnabled) {
       if (musicAudioRef.current) {
