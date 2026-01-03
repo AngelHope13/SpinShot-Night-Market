@@ -33,12 +33,11 @@ export const useSounds = () => {
   useEffect(() => {
     const settings = settingsContextRef.current?.settings;
 
-    // Background music URL - calm ambient music similar to Final Fantasy
-    // Option 1: Use this ambient track
-    const musicUrl = 'https://cdn.pixabay.com/audio/2022/05/13/audio_1e0e4c00d6.mp3';
-    
-    // Option 2: Upload your own MP3 file and use it like this:
-    // const musicUrl = '/path/to/your-music.mp3';
+    // Check for custom uploaded music first
+    const customMusicUrl = localStorage.getItem('spinshot-music-url');
+
+    // Use custom music if available, otherwise use default ambient track
+    const musicUrl = customMusicUrl || 'https://cdn.pixabay.com/audio/2022/05/13/audio_1e0e4c00d6.mp3';
 
     if (!settings?.musicEnabled) {
       if (musicAudioRef.current) {
