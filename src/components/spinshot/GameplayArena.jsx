@@ -145,19 +145,22 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       } else {
         // Level-based target distribution
         let availableTargets = [...TARGETS];
-        
-        // Levels 1-2: Only Milk Tea and Balloon
-        if (level <= 2) {
-          availableTargets = TARGETS.filter(t => t.type === 'milktea' || t.type === 'balloon');
+
+        // Level 1: Basic targets
+        if (level === 1) {
+          availableTargets = TARGETS.filter(t => ['milktea', 'balloon'].includes(t.type));
         }
-        // Levels 3-4: Add Lucky Cat and Stinky Tofu occasionally
-        else if (level <= 4) {
-          const rand = Math.random();
-          if (rand > 0.7) {
-            availableTargets = TARGETS;
-          } else {
-            availableTargets = TARGETS.filter(t => t.type === 'milktea' || t.type === 'balloon');
-          }
+        // Level 2: Add special targets
+        else if (level === 2) {
+          availableTargets = TARGETS.filter(t => ['milktea', 'balloon', 'bubbletea', 'luckycat', 'stinkytofu'].includes(t.type));
+        }
+        // Level 3+: More variety
+        else if (level === 3) {
+          availableTargets = TARGETS.filter(t => !['trap', 'signboard'].includes(t.type));
+        }
+        // Level 4+: All targets
+        else {
+          availableTargets = TARGETS;
         }
         
         const rand = Math.random();
