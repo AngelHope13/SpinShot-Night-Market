@@ -57,6 +57,8 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [activePowerups, setActivePowerups] = useState({});
   const [screenShake, setScreenShake] = useState(0);
   const [scoreAnimation, setScoreAnimation] = useState(0);
+  const [dartTrails, setDartTrails] = useState([]);
+  const [impactWaves, setImpactWaves] = useState([]);
   const arenaRef = useRef(null);
   const gameEndedRef = useRef(false);
   const sounds = useSounds();
@@ -344,6 +346,29 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     sounds.dartThrow();
     setDarts(prev => prev - 1);
 
+    // Create dart trail from click to target
+    const rect = arenaRef.current?.getBoundingClientRect();
+    if (rect) {
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      setDartTrails(prev => [...prev, {
+        id: Date.now(),
+        x1: clickX,
+        y1: clickY,
+        x2: target.x,
+        y2: target.y,
+      }]);
+      setTimeout(() => setDartTrails(prev => prev.slice(1)), 300);
+    }
+
+    // Create impact wave
+    setImpactWaves(prev => [...prev, {
+      id: Date.now(),
+      x: target.x,
+      y: target.y,
+    }]);
+    setTimeout(() => setImpactWaves(prev => prev.slice(1)), 600);
+
     // Rubber darts = no score
     if (wheelEffect?.id === 'rubber') {
       createParticles(target.x, target.y, '#ef4444', 8);
@@ -452,12 +477,27 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     sounds.dartThrow();
     sounds.targetMiss();
     setDarts(prev => prev - 1);
+    
+    // Miss trail effect
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    setDartTrails(prev => [...prev, {
+      id: Date.now(),
+      x1: clickX,
+      y1: clickY,
+      x2: x,
+      y2: y,
+      isMiss: true,
+    }]);
+    setTimeout(() => setDartTrails(prev => prev.slice(1)), 300);
+    
     setHitEffects(prev => [...prev, { id: Date.now(), x, y, text: 'MISS', color: '#ef4444' }]);
   }, [darts, windOffset, sounds]);
 
   const handlePowerupClick = useCallback((powerup, e) => {
     e.stopPropagation();
     sounds.targetHit(100);
+    createParticles(powerup.x, powerup.y, powerup.color, 20);
     setPowerups(prev => prev.filter(p => p.id !== powerup.id));
     setInventory(prev => [...prev, { ...powerup, inventoryId: Date.now() }]);
     setHitEffects(prev => [...prev, { 
@@ -465,9 +505,10 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       x: powerup.x, 
       y: powerup.y, 
       text: 'POWERUP!',
-      color: powerup.color
+      color: powerup.color,
+      isLarge: true
     }]);
-  }, [sounds]);
+  }, [sounds, createParticles]);
 
   const activatePowerup = useCallback((powerup) => {
     if (activePowerups[powerup.id]) return;
@@ -551,13 +592,28 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                 <div className="text-2xl font-black text-white">{level}</div>
               </div>
               
-              <div className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30 flex items-center gap-2">
+              <motion.div 
+                className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30 flex items-center gap-2"
+                animate={{
+                  scale: [1, 0.95, 1],
+                }}
+                transition={{ duration: 0.2 }}
+                key={darts}
+              >
                 <Crosshair className="w-5 h-5 text-pink-400" />
                 <div>
                   <div className="text-purple-300 text-xs">DARTS</div>
-                  <div className="text-2xl font-black text-white">{darts}</div>
+                  <motion.div 
+                    className="text-2xl font-black text-white"
+                    animate={{
+                      color: darts <= 5 ? ['#ffffff', '#ef4444', '#ffffff'] : '#ffffff',
+                    }}
+                    transition={{ duration: 0.5, repeat: darts <= 5 ? Infinity : 0 }}
+                  >
+                    {darts}
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
               
               <motion.div 
                 className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30 flex items-center gap-2"
@@ -727,6 +783,58 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           </div>
         )}
 
+        {/* Dart Trails */}
+        <AnimatePresence>
+          {dartTrails.map((trail) => {
+            const length = Math.sqrt(Math.pow(trail.x2 - trail.x1, 2) + Math.pow(trail.y2 - trail.y1, 2));
+            const angle = Math.atan2(trail.y2 - trail.y1, trail.x2 - trail.x1) * 180 / Math.PI;
+
+            return (
+              <motion.div
+                key={trail.id}
+                initial={{ scaleX: 0, opacity: 1 }}
+                animate={{ scaleX: 1, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="absolute pointer-events-none origin-left"
+                style={{
+                  left: trail.x1,
+                  top: trail.y1,
+                  width: length,
+                  height: 3,
+                  background: trail.isMiss 
+                    ? 'linear-gradient(90deg, rgba(239,68,68,0.8), rgba(239,68,68,0))'
+                    : 'linear-gradient(90deg, rgba(251,207,232,0.8), rgba(147,51,234,0))',
+                  transform: `rotate(${angle}deg)`,
+                  boxShadow: trail.isMiss ? '0 0 10px rgba(239,68,68,0.5)' : '0 0 10px rgba(251,207,232,0.5)',
+                }}
+              />
+            );
+          })}
+        </AnimatePresence>
+
+        {/* Impact Waves */}
+        <AnimatePresence>
+          {impactWaves.map((wave) => (
+            <motion.div
+              key={wave.id}
+              initial={{ scale: 0, opacity: 0.8 }}
+              animate={{ scale: 3, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="absolute pointer-events-none rounded-full border-4 border-white"
+              style={{
+                left: wave.x,
+                top: wave.y,
+                width: 40,
+                height: 40,
+                marginLeft: -20,
+                marginTop: -20,
+                boxShadow: '0 0 20px rgba(255,255,255,0.5)',
+              }}
+            />
+          ))}
+        </AnimatePresence>
+
         {/* Particles */}
         <AnimatePresence>
           {particles.map((particle) => (
@@ -820,30 +928,43 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           {powerups.map((powerup) => (
             <motion.div
               key={powerup.id}
-              initial={{ scale: 0, opacity: 0, rotate: 0 }}
+              initial={{ scale: 0, opacity: 0, rotate: 0, y: -20 }}
               animate={{ 
-                scale: [1, 1.1, 1],
+                scale: [1, 1.15, 1],
                 opacity: 1,
                 rotate: 360,
+                y: [0, -10, 0],
                 x: powerup.x,
-                y: powerup.y,
               }}
-              exit={{ scale: 0, opacity: 0 }}
+              exit={{ 
+                scale: [1, 1.5, 0],
+                opacity: [1, 1, 0],
+                y: -30,
+              }}
               transition={{ 
                 scale: { duration: 2, repeat: Infinity },
-                rotate: { duration: 3, repeat: Infinity, ease: "linear" }
+                rotate: { duration: 3, repeat: Infinity, ease: "linear" },
+                y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                exit: { duration: 0.5 }
               }}
               onClick={(e) => handlePowerupClick(powerup, e)}
               className="absolute cursor-pointer select-none"
               style={{ 
                 width: 70, 
                 height: 70,
+                left: 0,
+                top: powerup.y,
                 marginLeft: -35,
                 marginTop: -35,
               }}
             >
               <div className="relative w-full h-full">
-                <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: `${powerup.color}40` }} />
+                <motion.div 
+                  className="absolute inset-0 rounded-full" 
+                  style={{ backgroundColor: `${powerup.color}40` }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.6, 0, 0.6] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
                 <div 
                   className="absolute inset-0 rounded-full flex items-center justify-center text-4xl font-bold shadow-lg"
                   style={{ 
