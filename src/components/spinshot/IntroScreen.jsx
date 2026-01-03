@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, HelpCircle, Users, Settings } from 'lucide-react';
+import { Play, HelpCircle, Users } from 'lucide-react';
 import { useSounds } from './useSounds';
 
 const Lantern = ({ delay, x }) => (
@@ -34,7 +34,7 @@ const NeonGlow = () => (
   </div>
 );
 
-export default function IntroScreen({ onStart, onHowToPlay, onCredits, onSettings }) {
+export default function IntroScreen({ onStart, onHowToPlay, onCredits }) {
   const [particles, setParticles] = useState([]);
   const sounds = useSounds();
 
@@ -136,7 +136,7 @@ export default function IntroScreen({ onStart, onHowToPlay, onCredits, onSetting
           />
         </motion.button>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <motion.button
             onClick={() => {
               sounds.buttonClick();
@@ -148,19 +148,6 @@ export default function IntroScreen({ onStart, onHowToPlay, onCredits, onSetting
           >
             <HelpCircle className="w-5 h-5" />
             <span className="hidden sm:inline">HOW TO PLAY</span>
-          </motion.button>
-          
-          <motion.button
-            onClick={() => {
-              sounds.buttonClick();
-              onSettings();
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-4 py-3 bg-purple-800/50 backdrop-blur border border-purple-500/30 rounded-xl font-semibold text-purple-200 hover:bg-purple-700/50 transition-colors flex items-center justify-center gap-2"
-          >
-            <Settings className="w-5 h-5" />
-            <span className="hidden sm:inline">SETTINGS</span>
           </motion.button>
 
           <motion.button
