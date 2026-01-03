@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Trophy, XCircle, ArrowRight, RotateCcw, Home, Star } from 'lucide-react';
 import { useSounds } from './useSounds';
 
-export default function RoundResults({ level, roundScore, totalScore, cleared, isBossLevel, onNextLevel, onRetry, onMenu }) {
+export default function RoundResults({ level, roundScore, totalScore, cleared, isBossLevel, xpGained, currentXp, xpRequired, leveledUp, onNextLevel, onRetry, onMenu }) {
   const sounds = useSounds();
 
   useEffect(() => {
@@ -92,6 +92,71 @@ export default function RoundResults({ level, roundScore, totalScore, cleared, i
               <div className="text-3xl font-bold text-white">{totalScore.toLocaleString()}</div>
             </div>
           </motion.div>
+
+          {/* XP Gained */}
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6"
+          >
+            <div className="bg-purple-900/40 backdrop-blur border border-purple-500/30 rounded-xl px-6 py-4">
+              <div className="text-purple-300 text-sm mb-2">EXPERIENCE GAINED</div>
+              <motion.div 
+                className="text-3xl font-black text-cyan-400 mb-3"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                +{xpGained} XP
+              </motion.div>
+              
+              {level < 5 && (
+                <>
+                  <div className="flex justify-between text-xs text-purple-300 mb-2">
+                    <span>Level {level}</span>
+                    <span>{currentXp} / {xpRequired} XP</span>
+                  </div>
+                  <div className="h-4 bg-purple-900/50 rounded-full overflow-hidden border border-purple-500/30">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (currentXp / xpRequired) * 100)}%` }}
+                      transition={{ duration: 1, delay: 0.7, ease: "easeOut" }}
+                      style={{
+                        boxShadow: '0 0 15px rgba(236, 72, 153, 0.6)',
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </motion.div>
+          
+          {/* Level Up Notification */}
+          {leveledUp && (
+            <motion.div
+              initial={{ scale: 0, rotate: -180, opacity: 0 }}
+              animate={{ scale: 1, rotate: 0, opacity: 1 }}
+              transition={{ type: "spring", duration: 0.8, delay: 1 }}
+              className="mt-4 bg-gradient-to-r from-yellow-500 via-orange-500 to-pink-500 rounded-xl px-6 py-4 border-4 border-yellow-300"
+              style={{
+                boxShadow: '0 0 30px rgba(234, 179, 8, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.3)',
+              }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+                className="text-center"
+              >
+                <div className="text-4xl font-black text-white mb-1">
+                  🎉 LEVEL UP! 🎉
+                </div>
+                <div className="text-xl font-bold text-yellow-100">
+                  You reached Level {level}!
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
 
           {/* Buttons */}
           <motion.div

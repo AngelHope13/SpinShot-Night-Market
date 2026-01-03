@@ -18,11 +18,42 @@ const INITIAL_STATE = {
   roundScore: 0,
   wheelEffect: null,
   roundCleared: false,
+  xp: 0,
+  xpGained: 0,
+  leveledUp: false,
 };
+
+// XP requirements for each level
+const XP_REQUIREMENTS = [
+  0,     // Level 1 starts at 0
+  100,   // Level 2 requires 100 XP
+  250,   // Level 3 requires 250 XP
+  450,   // Level 4 requires 450 XP
+  700,   // Level 5 requires 700 XP (Boss)
+  1000,  // Level 6+ (endless mode)
+];
 
 function SpinShotGame() {
   const [gameState, setGameState] = useState(INITIAL_STATE);
   const { settings } = useSettings();
+
+  const getXpRequirement = (lvl) => {
+    if (lvl < XP_REQUIREMENTS.length) {
+      return XP_REQUIREMENTS[lvl];
+    }
+    return XP_REQUIREMENTS[XP_REQUIREMENTS.length - 1] + (lvl - XP_REQUIREMENTS.length + 1) * 300;
+  };
+  
+  const calculateXpGain = (score, cleared, lvl) => {
+    let baseXp = Math.floor(score / 10); // 1 XP per 10 points
+    if (cleared) {
+      baseXp += 50; // Bonus for clearing the round
+    }
+    if (lvl === 5) {
+      baseXp *= 2; // Double XP for boss level
+    }
+    return baseXp;
+  };
 
   const goToScreen = useCallback((screen) => {
     setGameState(prev => ({ ...prev, screen }));
@@ -44,13 +75,35 @@ function SpinShotGame() {
   }, []);
 
   const endRound = useCallback((roundScore, cleared) => {
-    setGameState(prev => ({
-      ...prev,
-      screen: 'results',
-      roundScore,
-      roundCleared: cleared,
-      totalScore: prev.totalScore + roundScore,
-    }));
+    setGameState(prev => {
+      // Calculate XP gained
+      const gainedXp = calculateXpGain(roundScore, cleared, prev.level);
+      const newXp = prev.xp + gainedXp;
+      const xpRequired = getXpRequirement(prev.level);
+      
+      // Check for level up
+      let newLevel = prev.level;
+      let finalXp = newXp;
+      let didLevelUp = false;
+      
+      if (newXp >= xpRequired && prev.level < 5) {
+        newLevel = prev.level + 1;
+        finalXp = newXp - xpRequired; // Carry over excess XP
+        didLevelUp = true;
+      }
+      
+      return {
+        ...prev,
+        screen: 'results',
+        roundScore,
+        roundCleared: cleared,
+        totalScore: prev.totalScore + roundScore,
+        xp: finalXp,
+        xpGained: gainedXp,
+        level: newLevel,
+        leveledUp: didLevelUp,
+      };
+    });
   }, []);
 
   const nextLevel = useCallback(() => {
@@ -59,9 +112,10 @@ function SpinShotGame() {
     } else {
       setGameState(prev => ({
         ...prev,
-        level: prev.level + 1,
         screen: 'wheel',
         wheelEffect: null,
+        xpGained: 0,
+        leveledUp: false,
       }));
     }
   }, [gameState.level, gameState.roundCleared]);
@@ -122,6 +176,8 @@ function SpinShotGame() {
       {gameState.screen === 'wheel' && (
         <WheelOfFate 
           level={gameState.level}
+          currentXp={gameState.xp}
+          xpRequired={getXpRequirement(gameState.level)}
           onEffectSelected={setWheelEffect}
           selectedEffect={gameState.wheelEffect}
           onStartRound={startRound}
@@ -142,6 +198,10 @@ function SpinShotGame() {
           totalScore={gameState.totalScore}
           cleared={gameState.roundCleared}
           isBossLevel={gameState.level === 5}
+          xpGained={gameState.xpGained}
+          currentXp={gameState.xp}
+          xpRequired={getXpRequirement(gameState.level)}
+          leveledUp={gameState.leveledUp}
           onNextLevel={nextLevel}
           onRetry={retryLevel}
           onMenu={backToMenu}
