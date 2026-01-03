@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Music, Check, Loader2 } from 'lucide-react';
+import { Upload, Music, Check, Loader2, Link } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function MusicUpload() {
   const [uploading, setUploading] = useState(false);
   const [currentUrl, setCurrentUrl] = useState(localStorage.getItem('spinshot-music-url') || '');
+  const [urlInput, setUrlInput] = useState('');
   const [success, setSuccess] = useState(false);
 
   const handleFileUpload = async (e) => {
@@ -46,6 +48,19 @@ export default function MusicUpload() {
     }
   };
 
+  const handleUrlSubmit = () => {
+    if (!urlInput.trim()) {
+      alert('Please enter a valid URL');
+      return;
+    }
+    
+    localStorage.setItem('spinshot-music-url', urlInput.trim());
+    setCurrentUrl(urlInput.trim());
+    setUrlInput('');
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 2000);
+  };
+
   const resetToDefault = () => {
     localStorage.removeItem('spinshot-music-url');
     setCurrentUrl('');
@@ -74,7 +89,29 @@ export default function MusicUpload() {
         >
           <div className="mb-6">
             <label className="block text-white font-semibold mb-4">
-              Upload MP3 File
+              Paste MP3 URL
+            </label>
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                placeholder="https://example.com/your-music.mp3"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                className="flex-1 bg-purple-950/50 border-purple-500/30 text-white placeholder:text-purple-400"
+              />
+              <Button
+                onClick={handleUrlSubmit}
+                className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500"
+              >
+                <Link className="w-5 h-5 mr-2" />
+                Set URL
+              </Button>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-white font-semibold mb-4">
+              Or Upload MP3 File
             </label>
             <div className="relative">
               <input
@@ -86,7 +123,7 @@ export default function MusicUpload() {
               />
               <Button
                 disabled={uploading}
-                className="w-full h-24 bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 text-white font-bold text-lg"
+                className="w-full h-20 bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500 text-white font-bold"
               >
                 {uploading ? (
                   <>
@@ -96,12 +133,12 @@ export default function MusicUpload() {
                 ) : success ? (
                   <>
                     <Check className="w-6 h-6 mr-2" />
-                    Uploaded Successfully!
+                    Success!
                   </>
                 ) : (
                   <>
                     <Upload className="w-6 h-6 mr-2" />
-                    Click to Upload MP3
+                    Upload MP3
                   </>
                 )}
               </Button>
