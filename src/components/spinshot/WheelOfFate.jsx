@@ -26,7 +26,7 @@ const WHEEL_EFFECTS = [
 
 const SEGMENT_ANGLE = 360 / WHEEL_EFFECTS.length;
 
-export default function WheelOfFate({ level, onEffectSelected, selectedEffect, onStartRound }) {
+export default function WheelOfFate({ level, currentXp, xpRequired, onEffectSelected, selectedEffect, onStartRound }) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [showResult, setShowResult] = useState(false);
@@ -93,17 +93,40 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[100px]" />
       </div>
 
-      {/* Level indicator */}
+      {/* Level indicator with XP bar */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="mb-6 text-center"
       >
-        <div className="text-purple-300 text-sm font-medium">LEVEL</div>
-        <div className="text-4xl font-black text-white">{level}</div>
-        {level === 5 && (
-          <div className="text-pink-400 font-bold mt-1 animate-pulse">⚔️ FORTUNE BOSS ⚔️</div>
-        )}
+        <div className="bg-purple-900/60 backdrop-blur border border-purple-500/30 rounded-2xl px-6 py-4 inline-block">
+          <div className="text-purple-300 text-sm font-medium">LEVEL</div>
+          <div className="text-4xl font-black text-white mb-2">{level}</div>
+          {level === 5 ? (
+            <div className="text-pink-400 font-bold mt-1 animate-pulse">⚔️ FORTUNE BOSS ⚔️</div>
+          ) : (
+            <div className="w-48">
+              <div className="flex justify-between text-xs text-purple-300 mb-1">
+                <span>XP: {currentXp}</span>
+                <span>{xpRequired}</span>
+              </div>
+              <div className="h-3 bg-purple-900/50 rounded-full overflow-hidden border border-purple-500/30">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(100, (currentXp / xpRequired) * 100)}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  style={{
+                    boxShadow: '0 0 10px rgba(236, 72, 153, 0.5)',
+                  }}
+                />
+              </div>
+              <div className="text-xs text-purple-400 mt-1">
+                {xpRequired - currentXp} XP to Level {level + 1}
+              </div>
+            </div>
+          )}
+        </div>
       </motion.div>
 
       {/* Wheel Container */}
