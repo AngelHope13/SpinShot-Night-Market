@@ -41,14 +41,8 @@ export const useSounds = () => {
       return;
     }
 
-    // You can replace this URL with your own music file
-    // For now, using a data URI placeholder (silence) - replace with actual file
-    const musicUrl = null; // Set to your music file URL: '/path/to/music.mp3'
-
-    if (!musicUrl) {
-      console.log('No background music file configured. Add your music file URL to useSounds.jsx');
-      return;
-    }
+    // Background music URL - using a free upbeat track
+    const musicUrl = 'https://cdn.pixabay.com/audio/2022/03/10/audio_4f87ba0f02.mp3';
 
     if (!musicAudioRef.current) {
       musicAudioRef.current = new Audio(musicUrl);
