@@ -33,8 +33,8 @@ export const useSounds = () => {
   useEffect(() => {
     const settings = settingsContextRef.current?.settings;
 
-    // Background music URL - using a reliable upbeat arcade-style track
-    const musicUrl = 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3';
+    // Background music URL - calm ambient music similar to Final Fantasy
+    const musicUrl = 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3';
 
     if (!settings?.musicEnabled) {
       if (musicAudioRef.current) {
