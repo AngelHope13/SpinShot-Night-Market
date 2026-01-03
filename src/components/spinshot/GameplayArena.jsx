@@ -6,12 +6,18 @@ import { useSettings } from './useSettings';
 import { GhibliMilktea, GhibliBalloon, GhibliStinkyTofu, GhibliLuckyCat, GhibliFortuneLantern } from './GhibliTargets';
 
 const TARGETS = [
-  { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.25, ghibliComponent: GhibliMilktea },
-  { type: 'balloon', emoji: '🎈', points: 50, size: 70, spawnChance: 0.25, ghibliComponent: GhibliBalloon },
-  { type: 'stinkytofu', emoji: '🤢', points: 150, size: 65, spawnChance: 0.15, ghibliComponent: GhibliStinkyTofu, movePattern: 'zigzag' },
-  { type: 'luckycat', emoji: '🐱', points: 300, size: 65, spawnChance: 0.08, ghibliComponent: GhibliLuckyCat },
-  { type: 'splitter', emoji: '💫', points: 200, size: 70, spawnChance: 0.12, ghibliComponent: null, movePattern: 'spiral', splits: true },
-  { type: 'trap', emoji: '💀', points: -100, size: 60, spawnChance: 0.15, ghibliComponent: null, isTrap: true },
+  { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.18, ghibliComponent: GhibliMilktea },
+  { type: 'balloon', emoji: '🎈', points: 50, size: 70, spawnChance: 0.18, ghibliComponent: GhibliBalloon },
+  { type: 'stinkytofu', emoji: '🤢', points: 150, size: 65, spawnChance: 0.10, ghibliComponent: GhibliStinkyTofu, movePattern: 'zigzag' },
+  { type: 'luckycat', emoji: '🐱', points: 300, size: 65, spawnChance: 0.06, ghibliComponent: GhibliLuckyCat },
+  { type: 'splitter', emoji: '💫', points: 200, size: 70, spawnChance: 0.08, ghibliComponent: null, movePattern: 'spiral', splits: true },
+  { type: 'trap', emoji: '💀', points: -100, size: 60, spawnChance: 0.10, ghibliComponent: null, isTrap: true },
+  { type: 'oysteromelet', emoji: '🥚', points: 250, size: 70, spawnChance: 0.08, ghibliComponent: null, requiresHits: 2, currentHits: 0 },
+  { type: 'shavedice', emoji: '🍧', points: 200, size: 65, spawnChance: 0.06, ghibliComponent: null, freezesTargets: true },
+  { type: 'friedchicken', emoji: '🍗', points: 180, size: 65, spawnChance: 0.08, ghibliComponent: null, greasy: true },
+  { type: 'bubbletea', emoji: '🥤', points: 150, size: 60, spawnChance: 0.12, ghibliComponent: null, scoreBoost: 50 },
+  { type: 'squid', emoji: '🦑', points: 280, size: 60, spawnChance: 0.06, ghibliComponent: null, movePattern: 'wavy' },
+  { type: 'signboard', emoji: '🏮', points: 400, size: 75, spawnChance: 0.04, ghibliComponent: null, grantsLuckyAim: true },
 ];
 
 const BOSS_TARGET = { 
@@ -260,6 +266,10 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           const spiralSpeed = 2;
           newX = target.x + target.direction.x * speed + Math.cos(patternTime * spiralSpeed) * spiralRadius;
           newY = target.y + target.direction.y * speed + Math.sin(patternTime * spiralSpeed) * spiralRadius;
+        } else if (target.movePattern === 'wavy') {
+          const waveOffset = Math.sin(patternTime * 4) * 25;
+          newX = target.x + target.direction.x * speed * 1.3 + waveOffset;
+          newY = target.y + target.direction.y * speed * 1.3;
         } else {
           newX = target.x + target.direction.x * speed;
           newY = target.y + target.direction.y * speed;
@@ -394,7 +404,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       }
 
       // Lucky aim = bonus points
-      const luckyBonus = wheelEffect?.id === 'lucky' ? 1.5 : 1;
+      const luckyBonus = (wheelEffect?.id === 'lucky' || activePowerups['lucky-buff']) ? 1.5 : 1;
       const points = Math.round(target.points * getScoreMultiplier() * luckyBonus);
       
       totalPoints += points;
@@ -1153,7 +1163,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
             >
               <div className={`w-full h-full flex items-center justify-center transition-transform hover:scale-110 ${target.isPaused || activePowerups['freeze-time'] ? 'animate-bounce' : ''} ${settings.targetSkin === 'ghibli' ? '' : 'text-4xl md:text-5xl'} ${target.isTrap ? 'animate-pulse' : ''}`}
                 style={{ 
-                  filter: activePowerups['freeze-time'] ? 'drop-shadow(0 0 15px rgba(6,182,212,0.8))' : target.isTrap ? 'drop-shadow(0 0 15px rgba(220,38,38,0.8))' : 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
+                  filter: activePowerups['freeze-time'] ? 'drop-shadow(0 0 15px rgba(6,182,212,0.8))' : target.isTrap ? 'drop-shadow(0 0 15px rgba(220,38,38,0.8))' : target.requiresHits ? 'drop-shadow(0 0 15px rgba(59,130,246,0.8))' : target.greasy ? 'drop-shadow(0 0 15px rgba(245,158,11,0.8))' : target.freezesTargets ? 'drop-shadow(0 0 15px rgba(34,211,238,0.8))' : target.grantsLuckyAim ? 'drop-shadow(0 0 20px rgba(251,191,36,0.9))' : 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
                   ...(settings.targetSkin === 'bubble' && { 
                     background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), transparent)',
                     borderRadius: '50%',
@@ -1165,11 +1175,32 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                   ...(target.splits && {
                     background: 'radial-gradient(circle, rgba(168,85,247,0.2), transparent)',
                     borderRadius: '50%',
+                  }),
+                  ...(target.requiresHits && {
+                    background: 'radial-gradient(circle, rgba(59,130,246,0.2), transparent)',
+                    borderRadius: '50%',
+                  }),
+                  ...(target.greasy && {
+                    background: 'radial-gradient(circle, rgba(245,158,11,0.2), transparent)',
+                    borderRadius: '50%',
+                  }),
+                  ...(target.freezesTargets && {
+                    background: 'radial-gradient(circle, rgba(34,211,238,0.2), transparent)',
+                    borderRadius: '50%',
+                  }),
+                  ...(target.grantsLuckyAim && {
+                    background: 'radial-gradient(circle, rgba(251,191,36,0.3), transparent)',
+                    borderRadius: '50%',
                   })
-                }}
-              >
-                {renderTargetVisual(target)}
-              </div>
+                  }}
+                  >
+                  {renderTargetVisual(target)}
+                  {target.requiresHits && (
+                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-bold text-blue-400 bg-blue-900/80 px-2 py-1 rounded">
+                    {(target.currentHits || 0)}/{target.requiresHits}
+                  </div>
+                  )}
+                  </div>
               {target.type === 'luckycat' && (
                 <div className="absolute inset-0 animate-ping">
                   <div className="w-full h-full rounded-full bg-yellow-400/30" />
