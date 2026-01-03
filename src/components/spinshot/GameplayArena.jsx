@@ -403,6 +403,108 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
         return;
       }
 
+      // Shield target - requires multiple hits
+      if (target.requiresHits) {
+        const newHits = (target.currentHits || 0) + 1;
+        if (newHits >= target.requiresHits) {
+          targetIds.push(target.id);
+          createParticles(projectile.x, projectile.y, '#3b82f6', 30);
+          setHitEffects(prev => [...prev, { 
+            id: Date.now() + Math.random(), 
+            x: projectile.x, 
+            y: projectile.y, 
+            text: 'SHIELD BROKEN!',
+            color: '#3b82f6',
+            isLarge: true
+          }]);
+        } else {
+          createParticles(projectile.x, projectile.y, '#60a5fa', 15);
+          setHitEffects(prev => [...prev, { 
+            id: Date.now() + Math.random(), 
+            x: projectile.x, 
+            y: projectile.y, 
+            text: `HIT ${newHits}/${target.requiresHits}`,
+            color: '#60a5fa'
+          }]);
+          setTargets(prev => prev.map(t => t.id === target.id ? { ...t, currentHits: newHits } : t));
+          setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
+          return;
+        }
+      }
+
+      // Greasy target - chance to deflect darts
+      if (target.greasy && Math.random() < 0.4) {
+        createParticles(projectile.x, projectile.y, '#f59e0b', 15);
+        setHitEffects(prev => [...prev, { 
+          id: Date.now() + Math.random(), 
+          x: projectile.x, 
+          y: projectile.y, 
+          text: 'SLIPPED!',
+          color: '#f59e0b'
+        }]);
+        setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
+        return;
+      }
+
+      // Shaved Ice - freezes all targets temporarily
+      if (target.freezesTargets) {
+        targetIds.push(target.id);
+        createParticles(projectile.x, projectile.y, '#22d3ee', 30);
+        setHitEffects(prev => [...prev, { 
+          id: Date.now() + Math.random(), 
+          x: projectile.x, 
+          y: projectile.y, 
+          text: 'FROZEN!',
+          color: '#22d3ee',
+          isLarge: true
+        }]);
+        setActivePowerups(prev => ({ ...prev, 'freeze-time': true }));
+        setTimeout(() => {
+          setActivePowerups(prev => {
+            const updated = { ...prev };
+            delete updated['freeze-time'];
+            return updated;
+          });
+        }, 3000);
+      }
+
+      // Signboard - grants lucky aim buff
+      if (target.grantsLuckyAim) {
+        targetIds.push(target.id);
+        createParticles(projectile.x, projectile.y, '#fbbf24', 35);
+        setHitEffects(prev => [...prev, { 
+          id: Date.now() + Math.random(), 
+          x: projectile.x, 
+          y: projectile.y, 
+          text: 'LUCKY AIM!',
+          color: '#fbbf24',
+          isLarge: true
+        }]);
+        setActivePowerups(prev => ({ ...prev, 'lucky-buff': true }));
+        setTimeout(() => {
+          setActivePowerups(prev => {
+            const updated = { ...prev };
+            delete updated['lucky-buff'];
+            return updated;
+          });
+        }, 5000);
+      }
+
+      // Bubble Tea - instant score boost
+      if (target.scoreBoost) {
+        targetIds.push(target.id);
+        createParticles(projectile.x, projectile.y, '#ec4899', 20);
+        setRoundScore(prev => prev + target.scoreBoost);
+        setHitEffects(prev => [...prev, { 
+          id: Date.now() + Math.random(), 
+          x: projectile.x, 
+          y: projectile.y, 
+          text: `+${target.scoreBoost} BONUS!`,
+          color: '#ec4899',
+          isLarge: true
+        }]);
+      }
+
       // Lucky aim = bonus points
       const luckyBonus = (wheelEffect?.id === 'lucky' || activePowerups['lucky-buff']) ? 1.5 : 1;
       const points = Math.round(target.points * getScoreMultiplier() * luckyBonus);
@@ -828,10 +930,16 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                 </div>
               )}
               {activePowerups['score-boost'] && (
-                <div className="flex items-center gap-1 bg-amber-900/60 px-2 py-1 rounded-lg border border-amber-500/30 animate-pulse">
-                  <TrendingUp className="w-3 h-3 text-amber-400" />
-                  <span className="text-xs text-amber-300 font-medium">2X SCORE</span>
-                </div>
+               <div className="flex items-center gap-1 bg-amber-900/60 px-2 py-1 rounded-lg border border-amber-500/30 animate-pulse">
+                 <TrendingUp className="w-3 h-3 text-amber-400" />
+                 <span className="text-xs text-amber-300 font-medium">2X SCORE</span>
+               </div>
+              )}
+              {activePowerups['lucky-buff'] && (
+               <div className="flex items-center gap-1 bg-yellow-900/60 px-2 py-1 rounded-lg border border-yellow-500/30 animate-pulse">
+                 <Target className="w-3 h-3 text-yellow-400" />
+                 <span className="text-xs text-yellow-300 font-medium">LUCKY AIM</span>
+               </div>
               )}
             </div>
 
