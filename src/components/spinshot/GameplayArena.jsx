@@ -1,0 +1,405 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Target, Clock, Crosshair, Sparkles, Zap, Wind, Gauge, XCircle } from 'lucide-react';
+
+const TARGETS = [
+  { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.35 },
+  { type: 'balloon', emoji: '🎈', points: 50, size: 55, spawnChance: 0.35 },
+  { type: 'stinkytofu', emoji: '🤢', points: 150, size: 50, spawnChance: 0.2 },
+  { type: 'luckycat', emoji: '🐱', points: 300, size: 45, spawnChance: 0.1 },
+];
+
+const EFFECT_ICONS = {
+  x2: Sparkles,
+  x3: Zap,
+  windy: Wind,
+  lucky: Target,
+  chaos: Gauge,
+  slow: Clock,
+  rubber: XCircle,
+  stinky: () => <span>🤢</span>,
+};
+
+export default function GameplayArena({ level, totalScore, wheelEffect, onRoundEnd }) {
+  const isBoss = level === 5;
+  const initialDarts = isBoss ? 20 : 15;
+  const initialTime = isBoss ? 60 : 30;
+  const bossTargetScore = 2000;
+
+  const [darts, setDarts] = useState(initialDarts);
+  const [timeLeft, setTimeLeft] = useState(initialTime);
+  const [roundScore, setRoundScore] = useState(0);
+  const [targets, setTargets] = useState([]);
+  const [hitEffects, setHitEffects] = useState([]);
+  const [windOffset, setWindOffset] = useState({ x: 0, y: 0 });
+  const arenaRef = useRef(null);
+  const gameEndedRef = useRef(false);
+
+  // Speed multiplier based on wheel effect
+  const getSpeedMultiplier = () => {
+    if (wheelEffect?.id === 'chaos') return 1.5;
+    if (wheelEffect?.id === 'slow') return 0.5;
+    return 1;
+  };
+
+  // Pause duration based on wheel effect
+  const getPauseDuration = () => {
+    if (wheelEffect?.id === 'stinky') return 200;
+    return 800;
+  };
+
+  // Score multiplier
+  const getScoreMultiplier = () => {
+    if (wheelEffect?.id === 'x2') return 2;
+    if (wheelEffect?.id === 'x3') return 3;
+    return 1;
+  };
+
+  // Spawn targets
+  useEffect(() => {
+    const spawnTarget = () => {
+      if (gameEndedRef.current) return;
+      
+      const rand = Math.random();
+      let cumulative = 0;
+      let selectedTarget = TARGETS[0];
+      
+      for (const target of TARGETS) {
+        cumulative += target.spawnChance;
+        if (rand <= cumulative) {
+          selectedTarget = target;
+          break;
+        }
+      }
+
+      const arena = arenaRef.current;
+      if (!arena) return;
+      
+      const rect = arena.getBoundingClientRect();
+      const padding = 80;
+
+      const newTarget = {
+        id: Date.now() + Math.random(),
+        ...selectedTarget,
+        x: padding + Math.random() * (rect.width - padding * 2),
+        y: padding + Math.random() * (rect.height - padding * 2),
+        direction: { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 },
+        isPaused: false,
+        pauseTimer: 0,
+      };
+
+      setTargets(prev => [...prev.slice(-7), newTarget]);
+    };
+
+    const interval = setInterval(spawnTarget, 1200);
+    spawnTarget();
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Move targets
+  useEffect(() => {
+    const moveTargets = () => {
+      if (gameEndedRef.current) return;
+      
+      const arena = arenaRef.current;
+      if (!arena) return;
+      const rect = arena.getBoundingClientRect();
+      const speed = 2 * getSpeedMultiplier();
+      const pauseDuration = getPauseDuration();
+
+      setTargets(prev => prev.map(target => {
+        if (target.isPaused) {
+          if (Date.now() - target.pauseTimer > pauseDuration) {
+            return { ...target, isPaused: false };
+          }
+          return target;
+        }
+
+        // Random pause chance
+        if (Math.random() < 0.01) {
+          return { ...target, isPaused: true, pauseTimer: Date.now() };
+        }
+
+        let newX = target.x + target.direction.x * speed;
+        let newY = target.y + target.direction.y * speed;
+        let newDir = { ...target.direction };
+
+        const padding = 40;
+        if (newX < padding || newX > rect.width - padding) {
+          newDir.x *= -1;
+          newX = Math.max(padding, Math.min(rect.width - padding, newX));
+        }
+        if (newY < padding || newY > rect.height - padding) {
+          newDir.y *= -1;
+          newY = Math.max(padding, Math.min(rect.height - padding, newY));
+        }
+
+        return { ...target, x: newX, y: newY, direction: newDir };
+      }));
+    };
+
+    const interval = setInterval(moveTargets, 16);
+    return () => clearInterval(interval);
+  }, [wheelEffect]);
+
+  // Wind effect
+  useEffect(() => {
+    if (wheelEffect?.id === 'windy') {
+      const interval = setInterval(() => {
+        setWindOffset({
+          x: (Math.random() - 0.5) * 30,
+          y: (Math.random() - 0.5) * 15,
+        });
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [wheelEffect]);
+
+  // Timer
+  useEffect(() => {
+    if (timeLeft <= 0 || gameEndedRef.current) return;
+    
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          gameEndedRef.current = true;
+          setTimeout(() => {
+            const cleared = isBoss ? roundScore >= bossTargetScore : true;
+            onRoundEnd(roundScore, cleared);
+          }, 500);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, roundScore, isBoss, bossTargetScore, onRoundEnd]);
+
+  // Check game end conditions
+  useEffect(() => {
+    if (darts <= 0 && !gameEndedRef.current) {
+      gameEndedRef.current = true;
+      setTimeout(() => {
+        const cleared = isBoss ? roundScore >= bossTargetScore : true;
+        onRoundEnd(roundScore, cleared);
+      }, 500);
+    }
+  }, [darts, roundScore, isBoss, bossTargetScore, onRoundEnd]);
+
+  const handleTargetClick = useCallback((target, e) => {
+    if (darts <= 0 || gameEndedRef.current) return;
+    
+    e.stopPropagation();
+    setDarts(prev => prev - 1);
+
+    // Rubber darts = no score
+    if (wheelEffect?.id === 'rubber') {
+      setHitEffects(prev => [...prev, { id: Date.now(), x: target.x, y: target.y, text: 'BOUNCE!', color: '#ef4444' }]);
+      return;
+    }
+
+    // Lucky aim = bonus points
+    const luckyBonus = wheelEffect?.id === 'lucky' ? 1.5 : 1;
+    const points = Math.round(target.points * getScoreMultiplier() * luckyBonus);
+    
+    setRoundScore(prev => prev + points);
+    setTargets(prev => prev.filter(t => t.id !== target.id));
+    
+    setHitEffects(prev => [...prev, { 
+      id: Date.now(), 
+      x: target.x, 
+      y: target.y, 
+      text: `+${points}`,
+      color: target.type === 'luckycat' ? '#ffd93d' : '#4ade80'
+    }]);
+  }, [darts, wheelEffect]);
+
+  const handleMiss = useCallback((e) => {
+    if (darts <= 0 || gameEndedRef.current) return;
+    
+    const rect = arenaRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    let x = e.clientX - rect.left + windOffset.x;
+    let y = e.clientY - rect.top + windOffset.y;
+    
+    setDarts(prev => prev - 1);
+    setHitEffects(prev => [...prev, { id: Date.now(), x, y, text: 'MISS', color: '#ef4444' }]);
+  }, [darts, windOffset]);
+
+  // Clean up hit effects
+  useEffect(() => {
+    if (hitEffects.length > 0) {
+      const timer = setTimeout(() => {
+        setHitEffects(prev => prev.slice(1));
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [hitEffects]);
+
+  const EffectIcon = EFFECT_ICONS[wheelEffect?.id] || Sparkles;
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* HUD */}
+      <div className="bg-gradient-to-b from-indigo-950 to-transparent p-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Top row */}
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-4">
+              <div className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30">
+                <div className="text-purple-300 text-xs">LEVEL</div>
+                <div className="text-2xl font-black text-white">{level}</div>
+              </div>
+              
+              <div className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30 flex items-center gap-2">
+                <Crosshair className="w-5 h-5 text-pink-400" />
+                <div>
+                  <div className="text-purple-300 text-xs">DARTS</div>
+                  <div className="text-2xl font-black text-white">{darts}</div>
+                </div>
+              </div>
+              
+              <div className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30 flex items-center gap-2">
+                <Clock className={`w-5 h-5 ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-teal-400'}`} />
+                <div>
+                  <div className="text-purple-300 text-xs">TIME</div>
+                  <div className={`text-2xl font-black ${timeLeft <= 10 ? 'text-red-400' : 'text-white'}`}>{timeLeft}s</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-right">
+              <div className="bg-purple-900/60 backdrop-blur px-4 py-2 rounded-xl border border-purple-500/30">
+                <div className="text-purple-300 text-xs">ROUND SCORE</div>
+                <div className="text-2xl font-black text-yellow-400">{roundScore.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Second row */}
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 bg-purple-900/40 backdrop-blur px-3 py-1.5 rounded-lg border border-purple-500/20">
+              <EffectIcon className="w-4 h-4" style={{ color: wheelEffect?.color || '#a78bfa' }} />
+              <span className="text-sm font-semibold text-purple-200">{wheelEffect?.name || 'No Effect'}</span>
+            </div>
+
+            <div className="text-purple-300 text-sm">
+              Total: <span className="text-white font-bold">{(totalScore + roundScore).toLocaleString()}</span>
+            </div>
+          </div>
+
+          {/* Boss target score */}
+          {isBoss && (
+            <div className="mt-3 text-center">
+              <div className="inline-block bg-gradient-to-r from-red-900/60 to-orange-900/60 backdrop-blur px-6 py-2 rounded-xl border border-red-500/30">
+                <div className="text-red-300 text-xs">⚔️ BOSS TARGET SCORE ⚔️</div>
+                <div className="text-2xl font-black text-red-400">{bossTargetScore.toLocaleString()}</div>
+                <div className="h-2 bg-red-900/50 rounded-full mt-1 overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-gradient-to-r from-red-500 to-orange-400"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (roundScore / bossTargetScore) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Game Arena */}
+      <div 
+        ref={arenaRef}
+        onClick={handleMiss}
+        className="flex-1 relative overflow-hidden cursor-crosshair"
+        style={{
+          background: 'radial-gradient(ellipse at center, #312e81 0%, #1e1b4b 50%, #0f0d24 100%)',
+        }}
+      >
+        {/* Decorative grid */}
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)',
+          backgroundSize: '50px 50px',
+        }} />
+
+        {/* Boss level dramatic effect */}
+        {isBoss && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0 bg-red-500/5 animate-pulse" />
+            <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-red-900/30 to-transparent" />
+          </div>
+        )}
+
+        {/* Targets */}
+        <AnimatePresence>
+          {targets.map((target) => (
+            <motion.div
+              key={target.id}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ 
+                scale: target.isPaused ? 1.1 : 1, 
+                opacity: 1,
+                x: target.x,
+                y: target.y,
+              }}
+              exit={{ scale: 1.5, opacity: 0 }}
+              transition={{ type: 'spring', damping: 15 }}
+              onClick={(e) => handleTargetClick(target, e)}
+              className="absolute cursor-pointer select-none"
+              style={{ 
+                width: target.size, 
+                height: target.size,
+                marginLeft: -target.size / 2,
+                marginTop: -target.size / 2,
+              }}
+            >
+              <div className={`w-full h-full flex items-center justify-center text-4xl md:text-5xl transition-transform hover:scale-110 ${target.isPaused ? 'animate-bounce' : ''}`}
+                style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}
+              >
+                {target.emoji}
+              </div>
+              {target.type === 'luckycat' && (
+                <div className="absolute inset-0 animate-ping">
+                  <div className="w-full h-full rounded-full bg-yellow-400/30" />
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* Hit effects */}
+        <AnimatePresence>
+          {hitEffects.map((effect) => (
+            <motion.div
+              key={effect.id}
+              initial={{ scale: 0.5, opacity: 1, y: 0 }}
+              animate={{ scale: 1.2, opacity: 0, y: -40 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              className="absolute pointer-events-none font-black text-2xl"
+              style={{ 
+                left: effect.x, 
+                top: effect.y,
+                color: effect.color,
+                textShadow: `0 0 10px ${effect.color}`,
+              }}
+            >
+              {effect.text}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* Wind indicator */}
+        {wheelEffect?.id === 'windy' && (
+          <div className="absolute bottom-4 left-4 bg-purple-900/60 backdrop-blur px-3 py-2 rounded-lg border border-purple-500/30 flex items-center gap-2">
+            <Wind className="w-5 h-5 text-cyan-400 animate-pulse" />
+            <span className="text-cyan-300 text-sm font-medium">Wind Active</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
