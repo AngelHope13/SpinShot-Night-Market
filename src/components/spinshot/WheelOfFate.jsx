@@ -54,7 +54,9 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
     setTimeout(() => {
       setIsSpinning(false);
       sounds.wheelStop();
-      const selectedIndex = (WHEEL_EFFECTS.length - Math.floor(((newRotation % 360) / SEGMENT_ANGLE))) % WHEEL_EFFECTS.length;
+      // Calculate which segment is under the pointer at the top
+      const normalizedRotation = ((newRotation % 360) + 360) % 360;
+      const selectedIndex = Math.floor((360 - normalizedRotation + 90) / SEGMENT_ANGLE) % WHEEL_EFFECTS.length;
       const effect = WHEEL_EFFECTS[selectedIndex];
       onEffectSelected(effect);
       setShowResult(true);
