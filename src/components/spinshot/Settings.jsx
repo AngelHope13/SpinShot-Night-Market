@@ -184,6 +184,41 @@ export default function Settings({ onBack }) {
 
 
 
+        {/* Aim Assist Setting */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mb-8 bg-purple-900/40 backdrop-blur border border-purple-500/20 rounded-2xl p-6"
+        >
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <Target className="w-5 h-5 text-pink-400" />
+            Aim Assist
+          </h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-purple-200 block">Enable Aim Assist</span>
+              <span className="text-purple-400 text-xs">Darts snap to nearby targets</span>
+            </div>
+            <motion.button
+              onClick={() => {
+                sounds.buttonClick();
+                updateSettings({ aimAssistEnabled: !settings.aimAssistEnabled });
+              }}
+              whileTap={{ scale: 0.95 }}
+              className={`w-14 h-8 rounded-full transition-colors relative ${
+                settings.aimAssistEnabled ? 'bg-green-500' : 'bg-gray-600'
+              }`}
+            >
+              <motion.div
+                className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg"
+                animate={{ left: settings.aimAssistEnabled ? '28px' : '4px' }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            </motion.button>
+          </div>
+        </motion.div>
+
         {/* Back Button */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}

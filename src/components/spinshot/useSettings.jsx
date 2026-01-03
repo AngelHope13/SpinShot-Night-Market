@@ -20,6 +20,7 @@ export const SettingsProvider = ({ children }) => {
     dartTrail: 'sparkle', // 'classic', 'sparkle', 'glow', 'neon', 'none'
     targetSkin: 'ghibli', // 'default', 'kawaii', 'pixel', 'minimal', 'bubble', 'ghibli'
     crosshair: 'default', // 'default', 'dot', 'cross', 'circle'
+    aimAssistEnabled: true, // Aim assist for better dart targeting
   });
 
   // Load from localStorage

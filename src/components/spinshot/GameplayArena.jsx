@@ -626,6 +626,33 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     let targetX = e.clientX - rect.left + windOffset.x;
     let targetY = e.clientY - rect.top + windOffset.y;
     
+    // Aim assist: snap to nearby target
+    if (settings.aimAssistEnabled) {
+      const snapRadius = 120; // pixels
+      let closestTarget = null;
+      let closestDistance = snapRadius;
+      
+      targets.forEach(target => {
+        // Don't snap to trap targets
+        if (target.isTrap) return;
+        
+        const dist = Math.sqrt(
+          Math.pow(targetX - target.x, 2) + Math.pow(targetY - target.y, 2)
+        );
+        
+        if (dist < closestDistance) {
+          closestDistance = dist;
+          closestTarget = target;
+        }
+      });
+      
+      // Snap to target if found
+      if (closestTarget) {
+        targetX = closestTarget.x;
+        targetY = closestTarget.y;
+      }
+    }
+    
     // Calculate trajectory
     const dx = targetX - startX;
     const dy = targetY - startY;
@@ -651,7 +678,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     };
     
     setProjectiles(prev => [...prev, newProjectile]);
-  }, [darts, windOffset, sounds, projectileSpeed]);
+  }, [darts, windOffset, sounds, projectileSpeed, settings.aimAssistEnabled, targets]);
 
   const handleMouseMove = useCallback((e) => {
     if (darts <= 0 || gameEndedRef.current) return;
@@ -659,12 +686,42 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     const rect = arenaRef.current?.getBoundingClientRect();
     if (!rect) return;
     
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    let mouseX = e.clientX - rect.left;
+    let mouseY = e.clientY - rect.top;
+    
+    // Aim assist: find snap target
+    let snapTarget = null;
+    if (settings.aimAssistEnabled) {
+      const snapRadius = 120;
+      let closestTarget = null;
+      let closestDistance = snapRadius;
+      
+      targets.forEach(target => {
+        if (target.isTrap) return;
+        
+        const dist = Math.sqrt(
+          Math.pow(mouseX + windOffset.x - target.x, 2) + 
+          Math.pow(mouseY + windOffset.y - target.y, 2)
+        );
+        
+        if (dist < closestDistance) {
+          closestDistance = dist;
+          closestTarget = target;
+        }
+      });
+      
+      if (closestTarget) {
+        snapTarget = closestTarget;
+        // Show snap position (compensate for wind)
+        mouseX = closestTarget.x - windOffset.x;
+        mouseY = closestTarget.y - windOffset.y;
+      }
+    }
     
     setAimPosition({
       x: mouseX,
       y: mouseY,
+      snapTarget,
     });
     
     // Calculate arc points for visual prediction
@@ -697,7 +754,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     }
     
     setArcPoints(points);
-  }, [darts]);
+  }, [darts, settings.aimAssistEnabled, targets, windOffset]);
 
   const handlePowerupClick = useCallback((powerup, e) => {
     e.stopPropagation();
@@ -1058,15 +1115,29 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
             <svg className="absolute inset-0 w-full h-full">
               <defs>
                 <linearGradient id="aimGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="rgba(236, 72, 153, 0.8)" />
-                  <stop offset="100%" stopColor="rgba(236, 72, 153, 0.2)" />
+                  <stop offset="0%" stopColor={aimPosition.snapTarget ? "rgba(74, 222, 128, 0.9)" : "rgba(236, 72, 153, 0.8)"} />
+                  <stop offset="100%" stopColor={aimPosition.snapTarget ? "rgba(74, 222, 128, 0.2)" : "rgba(236, 72, 153, 0.2)"} />
                 </linearGradient>
                 <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="rgba(139, 92, 246, 0.6)" />
                   <stop offset="100%" stopColor="rgba(139, 92, 246, 0.1)" />
                 </linearGradient>
               </defs>
-              
+
+              {/* Snap indicator circle */}
+              {aimPosition.snapTarget && (
+                <circle
+                  cx={aimPosition.x + windOffset.x}
+                  cy={aimPosition.y + windOffset.y}
+                  r="40"
+                  fill="none"
+                  stroke="rgba(74, 222, 128, 0.8)"
+                  strokeWidth="3"
+                  strokeDasharray="8,4"
+                  className="animate-pulse"
+                />
+              )}
+
               {/* Straight aiming line (actual dart path) */}
               <line
                 x1={arenaRef.current?.getBoundingClientRect().width / 2}
@@ -1074,11 +1145,11 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                 x2={aimPosition.x + windOffset.x}
                 y2={aimPosition.y + windOffset.y}
                 stroke="url(#aimGradient)"
-                strokeWidth="2"
+                strokeWidth={aimPosition.snapTarget ? "3" : "2"}
                 strokeDasharray="5,5"
-                opacity="0.6"
+                opacity={aimPosition.snapTarget ? "0.9" : "0.6"}
               />
-              
+
               {/* Predicted arc (visual only) */}
               {arcPoints.length > 1 && (
                 <path
@@ -1090,7 +1161,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                   opacity="0.4"
                 />
               )}
-              
+
               {/* Aim dots along the straight line */}
               {[0.25, 0.5, 0.75].map((ratio, i) => {
                 const startX = (arenaRef.current?.getBoundingClientRect().width || 0) / 2;
@@ -1104,14 +1175,14 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                     key={i}
                     cx={dotX}
                     cy={dotY}
-                    r="3"
-                    fill="rgba(236, 72, 153, 0.8)"
+                    r={aimPosition.snapTarget ? "4" : "3"}
+                    fill={aimPosition.snapTarget ? "rgba(74, 222, 128, 0.9)" : "rgba(236, 72, 153, 0.8)"}
                     className="animate-pulse"
                     style={{ animationDelay: `${i * 0.15}s` }}
                   />
                 );
               })}
-              
+
               {/* Arc dots for visual feedback */}
               {arcPoints.filter((_, i) => i % 5 === 0).map((point, i) => (
                 <circle
@@ -1123,6 +1194,26 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
                   opacity="0.4"
                 />
               ))}
+
+              {/* Target indicator at aim point */}
+              {aimPosition.snapTarget && (
+                <g>
+                  <circle
+                    cx={aimPosition.x + windOffset.x}
+                    cy={aimPosition.y + windOffset.y}
+                    r="8"
+                    fill="rgba(74, 222, 128, 0.3)"
+                    stroke="rgba(74, 222, 128, 0.9)"
+                    strokeWidth="2"
+                  />
+                  <circle
+                    cx={aimPosition.x + windOffset.x}
+                    cy={aimPosition.y + windOffset.y}
+                    r="3"
+                    fill="rgba(74, 222, 128, 1)"
+                  />
+                </g>
+              )}
             </svg>
           </div>
         )}
