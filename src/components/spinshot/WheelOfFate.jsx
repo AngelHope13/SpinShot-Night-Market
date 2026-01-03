@@ -59,6 +59,18 @@ export default function WheelOfFate({ level, onEffectSelected, selectedEffect, o
       // Adjust by -1 to correctly align with the center of the segment under the pointer
       const selectedIndex = (WHEEL_EFFECTS.length - Math.floor(normalizedRotation / SEGMENT_ANGLE) - 1 + WHEEL_EFFECTS.length) % WHEEL_EFFECTS.length;
       const effect = WHEEL_EFFECTS[selectedIndex];
+
+      // Play sound based on effect type
+      setTimeout(() => {
+        if (effect.type === 'buff') {
+          sounds.targetHit(300); // Positive sound for buffs
+        } else if (effect.type === 'curse') {
+          sounds.targetMiss(); // Negative sound for curses
+        } else {
+          sounds.targetHit(100); // Neutral sound
+        }
+      }, 300);
+
       onEffectSelected(effect);
       setShowResult(true);
       
