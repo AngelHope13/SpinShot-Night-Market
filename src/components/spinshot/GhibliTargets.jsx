@@ -2,7 +2,7 @@ import React from 'react';
 
 // Milk Tea Target - "Boba Spirit"
 export const GhibliMilktea = () => (
-  <svg width="100%" height="100%" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
     <defs>
       <linearGradient id="milkteaGrad" x1="30" y1="10" x2="30" y2="65">
         <stop offset="0%" stopColor="#E0BBE4" />
@@ -38,7 +38,7 @@ export const GhibliMilktea = () => (
 
 // Balloon Target - "Sky Lantern Buddy"
 export const GhibliBalloon = () => (
-  <svg width="100%" height="100%" viewBox="0 0 60 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 60 75" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
     <defs>
       <radialGradient id="balloonGrad" cx="50%" cy="30%">
         <stop offset="0%" stopColor="#FF8E8E" />
@@ -74,7 +74,7 @@ export const GhibliBalloon = () => (
 
 // Lucky Cat Target - "Maneki-Neko Charm"
 export const GhibliLuckyCat = () => (
-  <svg width="100%" height="100%" viewBox="0 0 65 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 65 70" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
     <defs>
       <linearGradient id="catGrad" x1="32" y1="10" x2="32" y2="65">
         <stop offset="0%" stopColor="#FFE4B5" />
@@ -119,7 +119,7 @@ export const GhibliLuckyCat = () => (
 
 // Stinky Tofu Target - "Fermented Friend"
 export const GhibliStinkyTofu = () => (
-  <svg width="100%" height="100%" viewBox="0 0 65 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 65 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
     <defs>
       <linearGradient id="tofuGrad" x1="32" y1="15" x2="32" y2="50">
         <stop offset="0%" stopColor="#A8B894" />
@@ -162,7 +162,7 @@ export const GhibliStinkyTofu = () => (
 
 // Fortune Lantern Boss Target - "Grand Spirit Orb"
 export const GhibliFortuneLantern = () => (
-  <svg width="100%" height="100%" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
     <defs>
       <radialGradient id="lanternGrad" cx="50%" cy="40%">
         <stop offset="0%" stopColor="#A78BFA" />
