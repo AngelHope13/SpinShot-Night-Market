@@ -1078,6 +1078,122 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
           background: 'radial-gradient(ellipse at center, #312e81 0%, #1e1b4b 50%, #0f0d24 100%)',
         }}
       >
+        {/* Night Market Ambiance - Background Layer */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Flickering Neon Signs */}
+          <motion.div
+            className="absolute top-10 left-10 text-pink-500 font-bold text-2xl"
+            animate={{ opacity: [1, 0.7, 1, 0.8, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            style={{ textShadow: '0 0 20px #ec4899, 0 0 40px #ec4899' }}
+          >
+            🏮 夜市
+          </motion.div>
+          <motion.div
+            className="absolute top-16 right-20 text-cyan-400 font-bold text-xl"
+            animate={{ opacity: [0.8, 1, 0.6, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            style={{ textShadow: '0 0 15px #22d3ee, 0 0 30px #22d3ee' }}
+          >
+            OPEN
+          </motion.div>
+          <motion.div
+            className="absolute bottom-20 left-20 text-yellow-400 font-bold text-xl"
+            animate={{ opacity: [1, 0.5, 1, 0.7, 1] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            style={{ textShadow: '0 0 20px #fbbf24, 0 0 40px #fbbf24' }}
+          >
+            🎯 DARTS
+          </motion.div>
+
+          {/* Swaying Lanterns */}
+          {[1, 2, 3].map((i) => (
+            <motion.div
+              key={`lantern-${i}`}
+              className="absolute text-4xl"
+              style={{
+                left: `${20 + i * 25}%`,
+                top: '-20px',
+                filter: 'drop-shadow(0 0 10px rgba(255, 107, 157, 0.5))',
+              }}
+              animate={{
+                y: [0, 10, 0],
+                rotate: [-3, 3, -3],
+              }}
+              transition={{
+                duration: 3 + i * 0.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.3,
+              }}
+            >
+              🏮
+            </motion.div>
+          ))}
+
+          {/* Steam Rising from Food Stalls */}
+          {[1, 2, 3, 4].map((i) => (
+            <motion.div
+              key={`steam-${i}`}
+              className="absolute bottom-0 w-16 h-32"
+              style={{
+                left: `${10 + i * 20}%`,
+                background: 'radial-gradient(ellipse at bottom, rgba(255,255,255,0.3), transparent)',
+                filter: 'blur(8px)',
+              }}
+              animate={{
+                y: [0, -100],
+                opacity: [0.6, 0],
+                scale: [1, 1.5],
+              }}
+              transition={{
+                duration: 4 + i * 0.5,
+                repeat: Infinity,
+                ease: "easeOut",
+                delay: i * 1.2,
+              }}
+            />
+          ))}
+
+          {/* Walking People Silhouettes */}
+          {[1, 2, 3].map((i) => (
+            <motion.div
+              key={`person-${i}`}
+              className="absolute bottom-8 text-2xl opacity-40"
+              style={{
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+              }}
+              animate={{
+                x: [-100, window.innerWidth + 100],
+              }}
+              transition={{
+                duration: 15 + i * 5,
+                repeat: Infinity,
+                ease: "linear",
+                delay: i * 3,
+              }}
+            >
+              🚶
+            </motion.div>
+          ))}
+
+          {/* Floating Food Stall Icons */}
+          <motion.div
+            className="absolute bottom-4 left-4 text-3xl opacity-50"
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            🍢
+          </motion.div>
+          <motion.div
+            className="absolute bottom-4 right-4 text-3xl opacity-50"
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          >
+            🍡
+          </motion.div>
+        </div>
+
         {/* Custom Crosshair */}
         {settings.crosshair !== 'default' && (
           <div className="absolute inset-0 pointer-events-none">
