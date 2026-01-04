@@ -50,7 +50,7 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
   const initialDarts = isBoss ? 20 : 15;
   const initialTime = isBoss ? 60 : 30;
   const bossTargetScore = 2000;
-  const dragonMaxHealth = 15;
+  const dragonMaxHealth = 5;
 
   const [darts, setDarts] = useState(initialDarts);
   const [timeLeft, setTimeLeft] = useState(initialTime);
@@ -440,14 +440,29 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
       createParticles(projectile.x, projectile.y, '#dc2626', 30);
       triggerScreenShake(2);
       
-      setHitEffects(prev => [...prev, { 
-        id: Date.now(), 
-        x: projectile.x, 
-        y: projectile.y, 
-        text: `HIT! ${newHealth}/${dragonMaxHealth}`,
-        color: '#dc2626',
-        isLarge: true
-      }]);
+      // Combo messages
+      const comboMessages = ['NICE!', 'GREAT!', 'EXCELLENT!', 'AMAZING!', 'LEGENDARY!'];
+      const hitsLanded = dragonMaxHealth - newHealth;
+      const comboText = comboMessages[Math.min(hitsLanded - 1, comboMessages.length - 1)];
+
+      setHitEffects(prev => [...prev, 
+        { 
+          id: Date.now(), 
+          x: projectile.x, 
+          y: projectile.y, 
+          text: `${comboText} ${hitsLanded}/${dragonMaxHealth}`,
+          color: '#fbbf24',
+          isLarge: true
+        },
+        { 
+          id: Date.now() + 0.01, 
+          x: projectile.x, 
+          y: projectile.y - 30, 
+          text: `COMBO x${hitsLanded}`,
+          color: '#f97316',
+          isLarge: true
+        }
+      ]);
       
       if (newHealth <= 0) {
         sounds.dragonDefeat();
