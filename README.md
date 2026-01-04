@@ -28,6 +28,11 @@ VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
 
 Run the app: `npm run dev`
 
+**Background music**
+
+- Add your MP3 to `public/audio/spinshot-theme.mp3` (this path is used for the default background loop).
+- You can also override via browser devtools: `localStorage.setItem('spinshot-music-url', 'https://your-hosted-track.mp3')`.
+
 **Publish your changes**
 
 Open [Base44.com](http://Base44.com) and click on Publish.

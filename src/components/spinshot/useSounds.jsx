@@ -32,12 +32,15 @@ export const useSounds = () => {
   // Background music - HTML5 Audio (supports MP3/OGG files)
   useEffect(() => {
     const settings = settingsContextRef.current?.settings;
+    const basePath = import.meta.env.BASE_URL || '/';
+    const defaultMusicUrl = `${basePath}audio/spinshot-theme.mp3`; // place your MP3 at public/audio/spinshot-theme.mp3
+    const fallbackMusicUrl = 'https://drive.google.com/uc?export=download&id=15cEgvYYrTvZGO-7itqVEmuvvrQ50tfwX';
 
     // Check for custom uploaded music first
     const customMusicUrl = localStorage.getItem('spinshot-music-url');
 
-    // Use custom music if available, otherwise use default ambient track
-    const musicUrl = customMusicUrl || 'https://drive.google.com/uc?export=download&id=15cEgvYYrTvZGO-7itqVEmuvvrQ50tfwX';
+    // Use custom music if available, otherwise use bundled track with fallback
+    const musicUrl = customMusicUrl || defaultMusicUrl;
 
     if (!settings?.musicEnabled) {
       if (musicAudioRef.current) {
@@ -52,6 +55,14 @@ export const useSounds = () => {
       audio.loop = true;
       audio.volume = settings.musicVolume || 0.5;
       audio.preload = 'auto';
+      audio.onerror = () => {
+        if (audio.src !== fallbackMusicUrl) {
+          console.log('Primary music missing, switching to fallback track...');
+          audio.src = fallbackMusicUrl;
+          audio.load();
+          audio.play().catch(() => {});
+        }
+      };
       musicAudioRef.current = audio;
       
       console.log('Background music initialized, URL:', musicUrl, 'volume:', settings.musicVolume);
