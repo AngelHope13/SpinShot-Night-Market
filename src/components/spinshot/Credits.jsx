@@ -38,7 +38,8 @@ export default function Credits({ onBack }) {
         >
           <div>
             <h3 className="text-pink-400 font-bold mb-1">Game Design & Development</h3>
-            <p>SpinShot Team</p>
+            <p className="font-semibold">莫羽翼</p>
+            <p className="text-sm text-purple-300">s24113326@gmail.com</p>
           </div>
           
           <div>
@@ -54,7 +55,7 @@ export default function Credits({ onBack }) {
 
           <div className="pt-4 border-t border-purple-500/20">
             <p className="flex items-center justify-center gap-2 text-sm">
-              Made with <Heart className="w-4 h-4 text-pink-500 fill-pink-500" /> for arcade lovers
+              Made with <Heart className="w-4 h-4 text-pink-500 fill-pink-500" /> for night market lovers
             </p>
           </div>
         </motion.div>
