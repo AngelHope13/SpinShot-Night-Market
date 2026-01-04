@@ -57,7 +57,7 @@ export default function HowToPlay({ onBack, onContinue }) {
     { component: GhibliSquid, name: 'Squid Stick', description: 'Fast wavy movement', points: 280 },
     { component: GhibliSignboard, name: 'Signboard', description: 'Grants Lucky Aim buff for 5s', points: 400 },
     { component: GhibliFortuneLantern, name: 'Fortune Lantern (Boss)', description: 'Level 5 only - slow, steady, very high points', points: 500 },
-    { component: () => <GhibliDragon health={15} maxHealth={15} />, name: 'Eastern Red Dragon (FINAL BOSS)', description: 'Appears at 500 XP in Level 5. Requires 15 hits to defeat! Breathes fire when weak.', points: '???' },
+    { component: () => <GhibliDragon health={5} maxHealth={5} />, name: 'Eastern Red Dragon (FINAL BOSS)', description: 'Appears at 75 XP in Level 5. Requires 5 hits to defeat! Breathes fire when weak.', points: '???' },
   ];
 
   return (
