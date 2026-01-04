@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Sun, Moon, Zap, Sunset, Volume2, VolumeX, Sparkles, Circle, Square, Target } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, Zap, Sunset, Volume2, VolumeX, Sparkles, Circle, Square, Target, GraduationCap } from 'lucide-react';
 import { useSounds } from './useSounds';
 import { useSettings } from './useSettings';
 
@@ -217,6 +217,33 @@ export default function Settings({ onBack, onStartTutorial }) {
               />
             </motion.button>
           </div>
+        </motion.div>
+
+        {/* Tutorial Section */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mb-8 bg-purple-900/40 backdrop-blur border border-purple-500/20 rounded-2xl p-6"
+        >
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <GraduationCap className="w-5 h-5 text-yellow-400" />
+            Tutorial
+          </h2>
+          <p className="text-purple-200 text-sm mb-4">
+            Need a refresher? Replay the interactive tutorial to learn game mechanics.
+          </p>
+          <motion.button
+            onClick={() => {
+              sounds.buttonClick();
+              onStartTutorial?.();
+            }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl font-bold text-white shadow-lg"
+          >
+            Start Tutorial
+          </motion.button>
         </motion.div>
 
         {/* Back Button */}
