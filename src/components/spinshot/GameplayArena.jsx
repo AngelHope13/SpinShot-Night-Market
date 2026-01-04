@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Clock, Crosshair, Sparkles, Zap, Wind, Gauge, XCircle, Plus, Snowflake, TrendingUp } from 'lucide-react';
 import { useSounds } from './useSounds';
 import { useSettings } from './useSettings';
-import { GhibliMilktea, GhibliBalloon, GhibliStinkyTofu, GhibliLuckyCat, GhibliFortuneLantern, GhibliSplitter, GhibliTrap, GhibliOysterOmelet, GhibliShavedIce, GhibliFriedChicken, GhibliBubbleTea, GhibliSquid, GhibliSignboard } from './GhibliTargets';
+import { GhibliMilktea, GhibliBalloon, GhibliStinkyTofu, GhibliLuckyCat, GhibliFortuneLantern, GhibliSplitter, GhibliTrap, GhibliOysterOmelet, GhibliShavedIce, GhibliFriedChicken, GhibliBubbleTea, GhibliSquid, GhibliSignboard, GhibliDragon } from './GhibliTargets';
 
 const TARGETS = [
   { type: 'milktea', emoji: '🧋', points: 100, size: 60, spawnChance: 0.18, ghibliComponent: GhibliMilktea },
@@ -45,11 +45,12 @@ const POWERUPS = [
   { id: 'score-boost', name: 'Score Boost', icon: TrendingUp, emoji: '⭐', color: '#f59e0b', description: '2x for 10s' },
 ];
 
-export default function GameplayArena({ level, totalScore, wheelEffect, onRoundEnd, onRecordDart }) {
+export default function GameplayArena({ level, totalScore, currentXp, wheelEffect, onRoundEnd, onRecordDart }) {
   const isBoss = level === 5;
   const initialDarts = isBoss ? 20 : 15;
   const initialTime = isBoss ? 60 : 30;
   const bossTargetScore = 2000;
+  const dragonMaxHealth = 15;
 
   const [darts, setDarts] = useState(initialDarts);
   const [timeLeft, setTimeLeft] = useState(initialTime);
@@ -68,9 +69,13 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
   const [projectiles, setProjectiles] = useState([]);
   const [aimPosition, setAimPosition] = useState(null);
   const [arcPoints, setArcPoints] = useState([]);
+  const [dragonAppeared, setDragonAppeared] = useState(false);
+  const [dragonHealth, setDragonHealth] = useState(dragonMaxHealth);
+  const [dragonBreathing, setDragonBreathing] = useState(false);
   const arenaRef = useRef(null);
   const projectileSpeed = 300; // pixels per frame - instant response
   const gameEndedRef = useRef(false);
+  const dragonAppearedRef = useRef(false);
   const sounds = useSounds();
   const { settings } = useSettings();
   
@@ -126,10 +131,50 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     return multiplier;
   };
 
+  // Check for dragon appearance
+  useEffect(() => {
+    if (isBoss && currentXp >= 500 && !dragonAppearedRef.current) {
+      dragonAppearedRef.current = true;
+      setDragonAppeared(true);
+      sounds.dragonAppear();
+      triggerScreenShake(4);
+    }
+  }, [isBoss, currentXp, sounds]);
+
+  // Dragon movement
+  useEffect(() => {
+    if (!dragonAppeared || activePowerups['freeze-time']) return;
+    
+    const interval = setInterval(() => {
+      sounds.dragonMove();
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [dragonAppeared, activePowerups, sounds]);
+
+  // Dragon breathe fire attack
+  useEffect(() => {
+    if (!dragonAppeared || dragonHealth <= 0) return;
+    
+    const breatheInterval = setInterval(() => {
+      if (dragonHealth < dragonMaxHealth * 0.3) {
+        setDragonBreathing(true);
+        sounds.dragonBreatheFire();
+        triggerScreenShake(3);
+        
+        setTimeout(() => {
+          setDragonBreathing(false);
+        }, 2000);
+      }
+    }, 8000);
+    
+    return () => clearInterval(breatheInterval);
+  }, [dragonAppeared, dragonHealth, dragonMaxHealth, sounds]);
+
   // Spawn targets with level-appropriate scaling
   useEffect(() => {
     const spawnTarget = () => {
-      if (gameEndedRef.current) return;
+      if (gameEndedRef.current || dragonAppeared) return;
       
       const arena = arenaRef.current;
       if (!arena) return;
@@ -367,7 +412,66 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     return distance < (target.size / 2 + 25); // 25px collision buffer for forgiving hits
   }, []);
 
+  const checkDragonHit = useCallback((projX, projY) => {
+    if (!dragonAppeared || dragonHealth <= 0) return false;
+    
+    const arena = arenaRef.current;
+    if (!arena) return false;
+    
+    const rect = arena.getBoundingClientRect();
+    const dragonX = rect.width / 2;
+    const dragonY = rect.height / 3;
+    const dragonRadius = 80;
+    
+    const distance = Math.sqrt(
+      Math.pow(projX - dragonX, 2) + Math.pow(projY - dragonY, 2)
+    );
+    
+    return distance < dragonRadius;
+  }, [dragonAppeared, dragonHealth]);
+
   const handleProjectileHit = useCallback((projectile, hitTargets) => {
+    // Check dragon hit first
+    if (checkDragonHit(projectile.x, projectile.y)) {
+      const newHealth = dragonHealth - 1;
+      setDragonHealth(newHealth);
+      
+      sounds.targetHit(300);
+      createParticles(projectile.x, projectile.y, '#dc2626', 30);
+      triggerScreenShake(2);
+      
+      setHitEffects(prev => [...prev, { 
+        id: Date.now(), 
+        x: projectile.x, 
+        y: projectile.y, 
+        text: `HIT! ${newHealth}/${dragonMaxHealth}`,
+        color: '#dc2626',
+        isLarge: true
+      }]);
+      
+      if (newHealth <= 0) {
+        sounds.dragonDefeat();
+        triggerScreenShake(5);
+        createParticles(projectile.x, projectile.y, '#fbbf24', 50);
+        setHitEffects(prev => [...prev, { 
+          id: Date.now() + 0.1, 
+          x: projectile.x, 
+          y: projectile.y - 40, 
+          text: 'DRAGON DEFEATED!',
+          color: '#fbbf24',
+          isLarge: true
+        }]);
+        
+        setTimeout(() => {
+          setDragonAppeared(false);
+        }, 2000);
+      }
+      
+      onRecordDart?.({ hit: true, points: 300, isTrap: false, isHighValue: true, targetsHit: 1 });
+      setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
+      return;
+    }
+    
     // Create impact wave
     setImpactWaves(prev => [...prev, {
       id: Date.now(),
@@ -627,7 +731,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     setTimeout(() => {
       setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
     }, 150);
-    }, [wheelEffect, sounds, createParticles, triggerScreenShake, getScoreMultiplier, onRecordDart]);
+    }, [wheelEffect, sounds, createParticles, triggerScreenShake, getScoreMultiplier, onRecordDart, checkDragonHit, dragonHealth, dragonMaxHealth]);
 
   const handleTargetClick = useCallback((target, e) => {
     e.stopPropagation();
@@ -1564,6 +1668,49 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
             </motion.div>
           ))}
         </AnimatePresence>
+
+        {/* Dragon Boss */}
+        {dragonAppeared && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0, y: -100 }}
+            animate={{ 
+              scale: 1, 
+              opacity: 1, 
+              y: 0,
+              x: dragonBreathing ? [0, -10, 10, -10, 10, 0] : 0,
+            }}
+            exit={{ scale: 0, opacity: 0, rotate: 360 }}
+            transition={{ 
+              type: 'spring',
+              damping: 10,
+              x: { duration: 0.5 }
+            }}
+            className="absolute pointer-events-none"
+            style={{
+              left: '50%',
+              top: '33%',
+              transform: 'translate(-50%, -50%)',
+              width: 200,
+              height: 200,
+              zIndex: 100,
+            }}
+          >
+            <GhibliDragon health={dragonHealth} maxHealth={dragonMaxHealth} />
+            
+            {dragonBreathing && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 3, opacity: [0, 0.6, 0] }}
+                transition={{ duration: 2 }}
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(251,146,60,0.8), rgba(220,38,38,0.4), transparent)',
+                  filter: 'blur(20px)',
+                }}
+              />
+            )}
+          </motion.div>
+        )}
 
         {/* Wind indicator */}
         {wheelEffect?.id === 'windy' && (

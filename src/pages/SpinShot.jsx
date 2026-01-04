@@ -218,6 +218,7 @@ function SpinShotGame() {
         <GameplayArena 
           level={gameState.level}
           totalScore={gameState.totalScore}
+          currentXp={gameState.xp}
           wheelEffect={gameState.wheelEffect}
           onRoundEnd={endRound}
           onRecordDart={recordDartThrow}
