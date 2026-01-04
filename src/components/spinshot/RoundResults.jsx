@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, XCircle, ArrowRight, RotateCcw, Home, Star } from 'lucide-react';
+import { Trophy, XCircle, ArrowRight, RotateCcw, Home, Star, Brain } from 'lucide-react';
 import { useSounds } from './useSounds';
+import AICoach from './AICoach';
 
-export default function RoundResults({ level, roundScore, totalScore, cleared, isBossLevel, xpGained, currentXp, xpRequired, leveledUp, onNextLevel, onRetry, onMenu }) {
+export default function RoundResults({ level, roundScore, totalScore, cleared, isBossLevel, xpGained, currentXp, xpRequired, leveledUp, playerStats, onNextLevel, onRetry, onMenu }) {
   const sounds = useSounds();
+  const [showAICoach, setShowAICoach] = useState(false);
 
   useEffect(() => {
     if (cleared) {
@@ -205,9 +207,39 @@ export default function RoundResults({ level, roundScore, totalScore, cleared, i
               <Home className="w-5 h-5" />
               Back to Menu
             </motion.button>
+
+            {/* AI Coach Button */}
+            {playerStats && playerStats.totalDarts >= 10 && (
+              <motion.button
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                onClick={() => {
+                  sounds.buttonClick();
+                  setShowAICoach(true);
+                }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all shadow-lg"
+              >
+                <Brain className="w-5 h-5" />
+                Get AI Performance Tips
+              </motion.button>
+            )}
           </motion.div>
         </div>
       </motion.div>
+
+      {showAICoach && playerStats && (
+        <AICoach
+          playerStats={playerStats}
+          onClose={() => setShowAICoach(false)}
+          onStartDrill={(drill) => {
+            setShowAICoach(false);
+            // Could implement drill mode here in future
+          }}
+        />
+      )}
     </div>
   );
 }
