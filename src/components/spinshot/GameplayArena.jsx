@@ -409,7 +409,7 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
     const distance = Math.sqrt(
       Math.pow(projX - target.x, 2) + Math.pow(projY - target.y, 2)
     );
-    return distance < (target.size / 2 + 25); // 25px collision buffer for forgiving hits
+    return distance < (target.size / 2 + 35); // 35px collision buffer for smooth hits
   }, []);
 
   const checkDragonHit = useCallback((projX, projY) => {
@@ -940,7 +940,7 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
   // Projectile movement and collision detection
   useEffect(() => {
     if (projectiles.length === 0) return;
-    
+
     const interval = setInterval(() => {
       setProjectiles(prev => {
         const updated = [];
@@ -993,7 +993,7 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
         
         return updated;
         });
-        }, 8);
+        }, 16);
 
         return () => clearInterval(interval);
         }, [projectiles.length, targets, checkCollision, handleProjectileHit, sounds]);
