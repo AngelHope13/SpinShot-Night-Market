@@ -582,9 +582,19 @@ export const GhibliDragon = ({ health, maxHealth }) => {
       <path d="M 85 43 Q 89 41 87 38 Q 85 35 81 37" fill="#e5e7eb" opacity="0.4" />
       <path d="M 20 70 Q 16 68 18 65 Q 20 62 24 64" fill="#e5e7eb" opacity="0.3" />
       
-      {/* Serpentine body coil */}
+      {/* Serpentine body - snake-like winding coil */}
       <path 
-        d="M 18 78 Q 10 60 16 42 Q 22 24 40 20 Q 56 18 68 30 Q 80 42 82 58 Q 84 74 70 84"
+        d="M 15 85 Q 8 70 12 55 Q 16 40 28 32 Q 38 26 48 28 Q 58 30 65 38 Q 72 46 75 60 Q 78 72 68 82 Q 60 88 50 84"
+        fill="url(#dragonBodyGrad)"
+        stroke="#7c2d12"
+        strokeWidth="4"
+        strokeLinecap="round"
+        filter="url(#glow)"
+      />
+      
+      {/* Additional body segments for snake effect */}
+      <path 
+        d="M 28 32 Q 32 28 38 26 Q 44 25 50 28"
         fill="url(#dragonBodyGrad)"
         stroke="#7c2d12"
         strokeWidth="3.5"
@@ -592,21 +602,27 @@ export const GhibliDragon = ({ health, maxHealth }) => {
         filter="url(#glow)"
       />
       
-      {/* Belly scales */}
-      <ellipse cx="21" cy="60" rx="5.5" ry="3.5" fill="url(#dragonBellyGrad)" opacity="0.85" />
-      <ellipse cx="28" cy="38" rx="5" ry="3" fill="url(#dragonBellyGrad)" opacity="0.85" />
-      <ellipse cx="42" cy="24" rx="5.5" ry="3.5" fill="url(#dragonBellyGrad)" opacity="0.85" />
-      <ellipse cx="58" cy="23" rx="5" ry="3" fill="url(#dragonBellyGrad)" opacity="0.85" />
-      <ellipse cx="70" cy="40" rx="5.5" ry="3.5" fill="url(#dragonBellyGrad)" opacity="0.85" />
-      <ellipse cx="75" cy="62" rx="5" ry="3" fill="url(#dragonBellyGrad)" opacity="0.85" />
+      {/* Belly scales following serpentine curve */}
+      <ellipse cx="16" cy="70" rx="5" ry="3.5" fill="url(#dragonBellyGrad)" opacity="0.85" />
+      <ellipse cx="14" cy="56" rx="4.5" ry="3" fill="url(#dragonBellyGrad)" opacity="0.85" />
+      <ellipse cx="20" cy="42" rx="5" ry="3.5" fill="url(#dragonBellyGrad)" opacity="0.85" />
+      <ellipse cx="32" cy="32" rx="4.5" ry="3" fill="url(#dragonBellyGrad)" opacity="0.85" />
+      <ellipse cx="48" cy="28" rx="5" ry="3.5" fill="url(#dragonBellyGrad)" opacity="0.85" />
+      <ellipse cx="62" cy="36" rx="4.5" ry="3" fill="url(#dragonBellyGrad)" opacity="0.85" />
+      <ellipse cx="72" cy="50" rx="5" ry="3.5" fill="url(#dragonBellyGrad)" opacity="0.85" />
+      <ellipse cx="76" cy="66" rx="4.5" ry="3" fill="url(#dragonBellyGrad)" opacity="0.85" />
+      <ellipse cx="66" cy="80" rx="5" ry="3.5" fill="url(#dragonBellyGrad)" opacity="0.85" />
       
       {/* Detailed scales on body */}
-      <circle cx="20" cy="70" r="2" fill="#b91c1c" opacity="0.6" />
-      <circle cx="30" cy="46" r="1.8" fill="#b91c1c" opacity="0.6" />
-      <circle cx="44" cy="28" r="2" fill="#b91c1c" opacity="0.6" />
-      <circle cx="60" cy="27" r="1.8" fill="#b91c1c" opacity="0.6" />
-      <circle cx="72" cy="48" r="2" fill="#b91c1c" opacity="0.6" />
-      <circle cx="78" cy="68" r="1.8" fill="#b91c1c" opacity="0.6" />
+      <circle cx="18" cy="76" r="2" fill="#b91c1c" opacity="0.6" />
+      <circle cx="16" cy="62" r="1.8" fill="#b91c1c" opacity="0.6" />
+      <circle cx="24" cy="46" r="2" fill="#b91c1c" opacity="0.6" />
+      <circle cx="36" cy="34" r="1.8" fill="#b91c1c" opacity="0.6" />
+      <circle cx="52" cy="30" r="2" fill="#b91c1c" opacity="0.6" />
+      <circle cx="68" cy="42" r="1.8" fill="#b91c1c" opacity="0.6" />
+      <circle cx="74" cy="56" r="2" fill="#b91c1c" opacity="0.6" />
+      <circle cx="78" cy="72" r="1.8" fill="#b91c1c" opacity="0.6" />
+      <circle cx="62" cy="84" r="2" fill="#b91c1c" opacity="0.6" />
       
       {/* Front claw visible on body */}
       <path d="M 35 65 L 30 73 L 28 72 L 26 74 L 24 73 L 22 75" stroke="#d97706" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.8" />
