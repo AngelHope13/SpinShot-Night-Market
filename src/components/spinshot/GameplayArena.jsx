@@ -1198,47 +1198,183 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
           background: 'radial-gradient(ellipse at center, #312e81 0%, #1e1b4b 50%, #0f0d24 100%)',
         }}
       >
-        {/* Night Market Ambiance - Background Layer */}
+        {/* Dynamic Environment Based on Level */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Steam Rising from Food Stalls */}
-          {[1, 2, 3, 4].map((i) => (
-            <motion.div
-              key={`steam-${i}`}
-              className="absolute bottom-0 w-16 h-32"
-              style={{
-                left: `${10 + i * 20}%`,
-                background: 'radial-gradient(ellipse at bottom, rgba(255,255,255,0.3), transparent)',
-                filter: 'blur(8px)',
-              }}
-              animate={{
-                y: [0, -100],
-                opacity: [0.6, 0],
-                scale: [1, 1.5],
-              }}
-              transition={{
-                duration: 4 + i * 0.5,
-                repeat: Infinity,
-                ease: "easeOut",
-                delay: i * 1.2,
-              }}
-            />
-          ))}
+          {/* Level 1-2: Night Market Ambiance */}
+          {level <= 2 && (
+            <>
+              {/* Steam Rising from Food Stalls */}
+              {[1, 2, 3, 4].map((i) => (
+                <motion.div
+                  key={`steam-${i}`}
+                  className="absolute bottom-0 w-16 h-32"
+                  style={{
+                    left: `${10 + i * 20}%`,
+                    background: 'radial-gradient(ellipse at bottom, rgba(255,255,255,0.3), transparent)',
+                    filter: 'blur(8px)',
+                  }}
+                  animate={{
+                    y: [0, -100],
+                    opacity: [0.6, 0],
+                    scale: [1, 1.5],
+                  }}
+                  transition={{
+                    duration: 4 + i * 0.5,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                    delay: i * 1.2,
+                  }}
+                />
+              ))}
+              <motion.div className="absolute bottom-4 left-4 text-3xl opacity-50" animate={{ y: [0, -5, 0], rotate: [0, 5, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>🍢</motion.div>
+              <motion.div className="absolute bottom-4 right-4 text-3xl opacity-50" animate={{ y: [0, -5, 0], rotate: [0, -5, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}>🍡</motion.div>
+              <motion.div className="absolute top-10 left-1/4 text-4xl opacity-40" animate={{ scale: [1, 1.1, 1], rotate: [0, 10, 0] }} transition={{ duration: 3, repeat: Infinity }}>🏮</motion.div>
+            </>
+          )}
 
-          {/* Floating Food Stall Icons */}
-          <motion.div
-            className="absolute bottom-4 left-4 text-3xl opacity-50"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            🍢
-          </motion.div>
-          <motion.div
-            className="absolute bottom-4 right-4 text-3xl opacity-50"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          >
-            🍡
-          </motion.div>
+          {/* Level 3: Festival Grounds */}
+          {level === 3 && (
+            <>
+              {/* Floating Lanterns */}
+              {[1, 2, 3, 4, 5].map((i) => (
+                <motion.div
+                  key={`lantern-${i}`}
+                  className="absolute text-4xl"
+                  style={{ left: `${15 + i * 15}%`, top: `${20 + (i % 3) * 20}%` }}
+                  animate={{
+                    y: [0, -15, 0],
+                    rotate: [0, 5, 0, -5, 0],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 3 + i * 0.3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.4,
+                  }}
+                >
+                  🏮
+                </motion.div>
+              ))}
+              {/* Paper decorations */}
+              <motion.div className="absolute top-5 left-10 text-3xl opacity-60" animate={{ rotate: [0, 360] }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}>🎋</motion.div>
+              <motion.div className="absolute top-5 right-10 text-3xl opacity-60" animate={{ rotate: [360, 0] }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }}>🎋</motion.div>
+            </>
+          )}
+
+          {/* Level 4: Mystical Temple */}
+          {level === 4 && (
+            <>
+              {/* Floating sakura petals */}
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <motion.div
+                  key={`petal-${i}`}
+                  className="absolute text-2xl"
+                  style={{ left: `${Math.random() * 100}%`, top: -20 }}
+                  animate={{
+                    y: [0, window.innerHeight],
+                    x: [0, Math.sin(i) * 50],
+                    rotate: [0, 360],
+                    opacity: [0, 0.8, 0],
+                  }}
+                  transition={{
+                    duration: 8 + i * 0.5,
+                    repeat: Infinity,
+                    ease: "linear",
+                    delay: i * 1.5,
+                  }}
+                >
+                  🌸
+                </motion.div>
+              ))}
+              {/* Glowing orbs */}
+              {[1, 2, 3].map((i) => (
+                <motion.div
+                  key={`orb-${i}`}
+                  className="absolute w-20 h-20 rounded-full"
+                  style={{
+                    left: `${20 + i * 30}%`,
+                    top: `${30 + i * 15}%`,
+                    background: 'radial-gradient(circle, rgba(168,85,247,0.4), transparent)',
+                    filter: 'blur(15px)',
+                  }}
+                  animate={{
+                    scale: [1, 1.5, 1],
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{
+                    duration: 3 + i,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.7,
+                  }}
+                />
+              ))}
+            </>
+          )}
+
+          {/* Level 5: Dragon's Lair */}
+          {level === 5 && (
+            <>
+              {/* Smoke and embers */}
+              {[1, 2, 3, 4, 5].map((i) => (
+                <motion.div
+                  key={`smoke-${i}`}
+                  className="absolute w-32 h-32"
+                  style={{
+                    left: `${10 + i * 18}%`,
+                    bottom: -20,
+                    background: 'radial-gradient(ellipse at bottom, rgba(220,38,38,0.4), transparent)',
+                    filter: 'blur(20px)',
+                  }}
+                  animate={{
+                    y: [0, -150],
+                    opacity: [0.7, 0],
+                    scale: [1, 2],
+                  }}
+                  transition={{
+                    duration: 5 + i * 0.3,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                    delay: i * 0.8,
+                  }}
+                />
+              ))}
+              {/* Flying embers */}
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <motion.div
+                  key={`ember-${i}`}
+                  className="absolute w-2 h-2 rounded-full bg-orange-500"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    bottom: 0,
+                    boxShadow: '0 0 10px rgba(251,146,60,0.8)',
+                  }}
+                  animate={{
+                    y: [0, -window.innerHeight],
+                    x: [0, (Math.random() - 0.5) * 100],
+                    opacity: [0, 1, 0],
+                  }}
+                  transition={{
+                    duration: 4 + Math.random() * 2,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                    delay: i * 0.5,
+                  }}
+                />
+              ))}
+              {/* Ominous clouds */}
+              <motion.div
+                className="absolute top-10 left-0 w-full h-40"
+                style={{
+                  background: 'radial-gradient(ellipse at top, rgba(127,29,29,0.3), transparent)',
+                  filter: 'blur(30px)',
+                }}
+                animate={{ opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </>
+          )}
         </div>
 
         {/* Custom Crosshair */}
@@ -1268,11 +1404,19 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
             </div>
           </div>
         )}
-        {/* Decorative grid */}
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)',
-          backgroundSize: '50px 50px',
-        }} />
+        {/* Decorative grid - adapts to level */}
+        <div 
+          className="absolute inset-0 transition-opacity duration-1000" 
+          style={{
+            backgroundImage: level === 5 
+              ? 'linear-gradient(#dc2626 1px, transparent 1px), linear-gradient(90deg, #dc2626 1px, transparent 1px)'
+              : level >= 3
+              ? 'linear-gradient(#a855f7 1px, transparent 1px), linear-gradient(90deg, #a855f7 1px, transparent 1px)'
+              : 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)',
+            backgroundSize: '50px 50px',
+            opacity: level === 5 ? 0.15 : 0.10,
+          }} 
+        />
 
         {/* Boss level dramatic effect */}
         {isBoss && (
@@ -1514,19 +1658,24 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
                 opacity: 1,
                 x: target.x,
                 y: target.y,
-                rotate: target.movePattern === 'spiral' ? [0, 360] : 0,
+                rotate: target.movePattern === 'spiral' ? [0, 360] : target.movePattern === 'zigzag' ? [0, 5, 0, -5, 0] : 0,
               }}
               exit={{ 
                 scale: [1, 1.3, 0],
                 opacity: [1, 1, 0],
-                rotate: target.splits ? 180 : 0,
+                rotate: target.splits ? 180 : target.isTrap ? -90 : 0,
               }}
               transition={{ 
                 type: 'spring', 
                 damping: 15,
                 exit: { duration: 0.4 },
-                rotate: target.movePattern === 'spiral' ? { duration: 2, repeat: Infinity, ease: "linear" } : {}
+                rotate: target.movePattern === 'spiral' 
+                  ? { duration: 2, repeat: Infinity, ease: "linear" } 
+                  : target.movePattern === 'zigzag'
+                  ? { duration: 0.5, repeat: Infinity, ease: "easeInOut" }
+                  : {},
               }}
+              whileHover={{ scale: 1.15, rotate: target.isTrap ? [0, -10, 10, -10, 0] : 0 }}
               className="absolute select-none pointer-events-none"
               style={{ 
                 width: target.size, 
@@ -1535,7 +1684,14 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
                 marginTop: -target.size / 2,
               }}
             >
-              <div className={`w-full h-full flex items-center justify-center transition-transform hover:scale-110 ${target.isPaused || activePowerups['freeze-time'] ? 'animate-bounce' : ''} ${settings.targetSkin === 'ghibli' ? '' : 'text-4xl md:text-5xl'} ${target.isTrap ? 'animate-pulse' : ''}`}
+              <motion.div 
+                className={`w-full h-full flex items-center justify-center transition-transform ${target.isPaused || activePowerups['freeze-time'] ? 'animate-bounce' : ''} ${settings.targetSkin === 'ghibli' ? '' : 'text-4xl md:text-5xl'} ${target.isTrap ? 'animate-pulse' : ''}`}
+                animate={{
+                  y: target.type === 'balloon' ? [0, -3, 0] : 0,
+                }}
+                transition={{
+                  y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                }}
                 style={{ 
                   filter: activePowerups['freeze-time'] ? 'drop-shadow(0 0 15px rgba(6,182,212,0.8))' : target.isTrap ? 'drop-shadow(0 0 15px rgba(220,38,38,0.8))' : target.requiresHits ? 'drop-shadow(0 0 15px rgba(59,130,246,0.8))' : target.greasy ? 'drop-shadow(0 0 15px rgba(245,158,11,0.8))' : target.freezesTargets ? 'drop-shadow(0 0 15px rgba(34,211,238,0.8))' : target.grantsLuckyAim ? 'drop-shadow(0 0 20px rgba(251,191,36,0.9))' : 'drop-shadow(0 0 10px rgba(255,255,255,0.3))',
                   ...(settings.targetSkin === 'bubble' && { 
@@ -1570,15 +1726,37 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
                   >
                   {renderTargetVisual(target)}
                   {target.requiresHits && (
-                  <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-bold text-blue-400 bg-blue-900/80 px-2 py-1 rounded">
+                  <motion.div 
+                    className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-bold text-blue-400 bg-blue-900/80 px-2 py-1 rounded"
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 0.5, repeat: Infinity }}
+                  >
                     {(target.currentHits || 0)}/{target.requiresHits}
-                  </div>
+                  </motion.div>
                   )}
-                  </div>
+                  </motion.div>
               {target.type === 'luckycat' && (
-                <div className="absolute inset-0 animate-ping">
-                  <div className="w-full h-full rounded-full bg-yellow-400/30" />
-                </div>
+                <>
+                  <div className="absolute inset-0 animate-ping">
+                    <div className="w-full h-full rounded-full bg-yellow-400/30" />
+                  </div>
+                  <motion.div
+                    className="absolute -top-2 -right-2 text-xl"
+                    animate={{ rotate: [0, 20, 0], y: [0, -5, 0] }}
+                    transition={{ duration: 0.6, repeat: Infinity }}
+                  >
+                    ✨
+                  </motion.div>
+                </>
+              )}
+              {target.type === 'stinkytofu' && (
+                <motion.div
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 text-lg"
+                  animate={{ y: [0, -10, 0], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  💨
+                </motion.div>
               )}
             </motion.div>
           ))}
