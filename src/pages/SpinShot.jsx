@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import IntroScreen from '@/components/spinshot/IntroScreen';
 import HowToPlay from '@/components/spinshot/HowToPlay';
 import WheelOfFate from '@/components/spinshot/WheelOfFate';
@@ -9,6 +9,7 @@ import Victory from '@/components/spinshot/Victory';
 import Credits from '@/components/spinshot/Credits';
 import Settings from '@/components/spinshot/Settings';
 import Leaderboard from '@/components/spinshot/Leaderboard';
+import Tutorial from '@/components/spinshot/Tutorial';
 import { SettingsProvider, useSettings } from '@/components/spinshot/useSettings';
 import { base44 } from '@/api/base44Client';
 
@@ -37,7 +38,15 @@ const XP_REQUIREMENTS = [
 
 function SpinShotGame() {
   const [gameState, setGameState] = useState(INITIAL_STATE);
-  const { settings } = useSettings();
+  const [showTutorial, setShowTutorial] = useState(false);
+  const { settings, updateSettings } = useSettings();
+
+  // Show tutorial on first launch
+  useEffect(() => {
+    if (!settings.tutorialCompleted) {
+      setShowTutorial(true);
+    }
+  }, []);
 
   const getXpRequirement = (lvl) => {
     if (lvl < XP_REQUIREMENTS.length) {
@@ -144,6 +153,20 @@ function SpinShotGame() {
     setGameState(INITIAL_STATE);
   }, []);
 
+  const startTutorial = useCallback(() => {
+    setShowTutorial(true);
+    setGameState(INITIAL_STATE);
+  }, []);
+
+  const completeTutorial = useCallback(() => {
+    updateSettings({ tutorialCompleted: true });
+  }, [updateSettings]);
+
+  const skipTutorial = useCallback(() => {
+    setShowTutorial(false);
+    updateSettings({ tutorialCompleted: true });
+  }, [updateSettings]);
+
   const themeGradients = {
     night: 'from-indigo-950 via-purple-950 to-violet-950',
     day: 'from-sky-400 via-blue-300 to-cyan-200',
@@ -165,7 +188,7 @@ function SpinShotGame() {
         />
       )}
       {gameState.screen === 'settings' && (
-        <Settings onBack={backToMenu} />
+        <Settings onBack={backToMenu} onStartTutorial={startTutorial} />
       )}
       {gameState.screen === 'howtoplay' && (
         <HowToPlay 
@@ -226,6 +249,15 @@ function SpinShotGame() {
           totalScore={gameState.totalScore}
           onPlayAgain={playAgain}
           onMenu={backToMenu}
+        />
+      )}
+
+      {/* Tutorial Overlay */}
+      {showTutorial && (
+        <Tutorial
+          currentScreen={gameState.screen}
+          onComplete={completeTutorial}
+          onSkip={skipTutorial}
         />
       )}
     </div>

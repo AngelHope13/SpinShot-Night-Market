@@ -37,7 +37,7 @@ const crosshairs = [
   { id: 'circle', name: 'Circle', icon: '◯' },
 ];
 
-export default function Settings({ onBack }) {
+export default function Settings({ onBack, onStartTutorial }) {
   const sounds = useSounds();
   const { settings, updateSettings } = useSettings();
 

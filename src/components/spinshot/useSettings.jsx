@@ -21,6 +21,7 @@ export const SettingsProvider = ({ children }) => {
     targetSkin: 'ghibli', // 'default', 'kawaii', 'pixel', 'minimal', 'bubble', 'ghibli'
     crosshair: 'default', // 'default', 'dot', 'cross', 'circle'
     aimAssistEnabled: true, // Aim assist for better dart targeting
+    tutorialCompleted: false, // Track if user has completed tutorial
   });
 
   // Load from localStorage
