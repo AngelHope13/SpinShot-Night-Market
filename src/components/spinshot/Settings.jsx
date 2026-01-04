@@ -215,6 +215,53 @@ export default function Settings({ onBack, onStartTutorial }) {
                   />
                 )}
               </div>
+              
+              {/* Music Upload */}
+              <div className="mt-4 pt-4 border-t border-purple-500/20">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Music className="w-4 h-4 text-purple-300" />
+                    <span className="text-purple-200 text-sm">Custom Background Music</span>
+                  </div>
+                </div>
+                {customMusicName ? (
+                  <div className="bg-purple-800/30 rounded-lg p-3 flex items-center justify-between">
+                    <span className="text-purple-200 text-sm truncate flex-1">{customMusicName}</span>
+                    <motion.button
+                      onClick={handleRemoveMusic}
+                      whileTap={{ scale: 0.95 }}
+                      className="ml-2 px-3 py-1 bg-red-500/80 hover:bg-red-600 rounded text-white text-xs font-medium"
+                    >
+                      Remove
+                    </motion.button>
+                  </div>
+                ) : (
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleMusicUpload}
+                      disabled={uploadingMusic}
+                      className="hidden"
+                    />
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="bg-purple-800/30 border-2 border-dashed border-purple-500/40 hover:border-purple-400 rounded-lg p-4 flex items-center justify-center gap-2 transition-colors"
+                    >
+                      {uploadingMusic ? (
+                        <div className="text-purple-300 text-sm">Uploading...</div>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 text-purple-300" />
+                          <span className="text-purple-300 text-sm">Upload Music (MP3, OGG, WAV)</span>
+                        </>
+                      )}
+                    </motion.div>
+                  </label>
+                )}
+                <p className="text-purple-400 text-xs mt-2">Upload your own background music to personalize the game!</p>
+              </div>
             </>
           )}
         </motion.div>
