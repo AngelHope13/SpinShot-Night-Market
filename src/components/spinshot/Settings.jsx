@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Sun, Moon, Zap, Sunset, Volume2, VolumeX, Sparkles, Circle, Square, Target, GraduationCap } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, Zap, Sunset, Volume2, VolumeX, Sparkles, Circle, Square, Target, GraduationCap, Upload, Music } from 'lucide-react';
 import { useSounds } from './useSounds';
 import { useSettings } from './useSettings';
+import { base44 } from '@/api/base44Client';
 
 const themes = [
   { id: 'night', name: 'Night Market', icon: Moon, gradient: 'from-indigo-950 via-purple-950 to-violet-950' },
@@ -40,6 +41,42 @@ const crosshairs = [
 export default function Settings({ onBack, onStartTutorial }) {
   const sounds = useSounds();
   const { settings, updateSettings } = useSettings();
+  const [uploadingMusic, setUploadingMusic] = useState(false);
+  const [customMusicName, setCustomMusicName] = useState(localStorage.getItem('spinshot-music-name') || null);
+
+  const handleMusicUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check if it's an audio file
+    if (!file.type.startsWith('audio/')) {
+      alert('Please upload an audio file (MP3, OGG, WAV, etc.)');
+      return;
+    }
+
+    setUploadingMusic(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      localStorage.setItem('spinshot-music-url', file_url);
+      localStorage.setItem('spinshot-music-name', file.name);
+      setCustomMusicName(file.name);
+      alert('Music uploaded successfully! Reload the page to hear it.');
+      sounds.buttonClick();
+    } catch (error) {
+      console.error('Failed to upload music:', error);
+      alert('Failed to upload music. Please try again.');
+    } finally {
+      setUploadingMusic(false);
+    }
+  };
+
+  const handleRemoveMusic = () => {
+    localStorage.removeItem('spinshot-music-url');
+    localStorage.removeItem('spinshot-music-name');
+    setCustomMusicName(null);
+    alert('Custom music removed! Reload the page to use default music.');
+    sounds.buttonClick();
+  };
 
   return (
     <div className="min-h-screen p-4 md:p-8 overflow-y-auto">
