@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, RotateCcw, Target, Trophy } from 'lucide-react';
 import { useSounds } from './useSounds';
-import { GhibliMilktea, GhibliBalloon, GhibliLuckyCat, GhibliStinkyTofu, GhibliFortuneLantern, GhibliSplitter, GhibliTrap, GhibliOysterOmelet, GhibliShavedIce, GhibliFriedChicken, GhibliBubbleTea, GhibliSquid, GhibliSignboard } from './GhibliTargets';
+import { GhibliMilktea, GhibliBalloon, GhibliLuckyCat, GhibliStinkyTofu, GhibliFortuneLantern, GhibliSplitter, GhibliTrap, GhibliOysterOmelet, GhibliShavedIce, GhibliFriedChicken, GhibliBubbleTea, GhibliSquid, GhibliSignboard, GhibliDragon } from './GhibliTargets';
 
 const StepCard = ({ number, icon: Icon, title, description, delay }) => (
   <motion.div
@@ -57,6 +57,7 @@ export default function HowToPlay({ onBack, onContinue }) {
     { component: GhibliSquid, name: 'Squid Stick', description: 'Fast wavy movement', points: 280 },
     { component: GhibliSignboard, name: 'Signboard', description: 'Grants Lucky Aim buff for 5s', points: 400 },
     { component: GhibliFortuneLantern, name: 'Fortune Lantern (Boss)', description: 'Level 5 only - slow, steady, very high points', points: 500 },
+    { component: () => <GhibliDragon health={15} maxHealth={15} />, name: 'Eastern Red Dragon (FINAL BOSS)', description: 'Appears at 500 XP in Level 5. Requires 15 hits to defeat! Breathes fire when weak.', points: '???' },
   ];
 
   return (
