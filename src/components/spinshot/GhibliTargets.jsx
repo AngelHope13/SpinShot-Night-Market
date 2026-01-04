@@ -538,7 +538,7 @@ export const GhibliSignboard = () => (
   </svg>
 );
 
-// Dragon Boss - "Eastern Red Dragon" - Simplified for small scale
+// Dragon Boss - "Eastern Red Dragon" - Clearly serpentine
 export const GhibliDragon = ({ health, maxHealth }) => {
   const healthPercent = (health / maxHealth) * 100;
   
@@ -550,6 +550,10 @@ export const GhibliDragon = ({ health, maxHealth }) => {
           <stop offset="50%" stopColor="#f97316" />
           <stop offset="100%" stopColor="#c2410c" />
         </linearGradient>
+        <linearGradient id="dragonScaleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#fb923c" />
+          <stop offset="100%" stopColor="#ea580c" />
+        </linearGradient>
         <radialGradient id="dragonGlow">
           <stop offset="0%" stopColor="#fbbf24" />
           <stop offset="100%" stopColor="transparent" />
@@ -560,67 +564,98 @@ export const GhibliDragon = ({ health, maxHealth }) => {
       </defs>
       
       {/* Glow aura */}
-      <circle cx="50" cy="50" r="48" fill="url(#dragonGlow)" opacity="0.3" />
+      <circle cx="50" cy="50" r="48" fill="url(#dragonGlow)" opacity="0.2" />
       
-      {/* Serpentine body - bold S-shape */}
+      {/* Long serpentine body - clear S-curve */}
       <path 
-        d="M 30 70 Q 25 50 35 35 Q 45 20 60 30 Q 75 40 75 55 Q 75 70 60 75"
+        d="M 20 75 Q 15 60 20 45 Q 25 30 38 28 Q 50 26 62 35 Q 74 44 78 58 Q 82 72 70 80"
         fill="url(#dragonOrangeGrad)"
         stroke="#7c2d12"
-        strokeWidth="3"
+        strokeWidth="4"
+        strokeLinecap="round"
         filter="url(#glow)"
       />
       
-      {/* Head - prominent */}
-      <circle cx="50" cy="45" r="20" fill="url(#dragonOrangeGrad)" stroke="#7c2d12" strokeWidth="2.5" filter="url(#glow)" />
+      {/* Belly stripe */}
+      <path 
+        d="M 22 70 Q 23 55 28 42 Q 35 32 48 32 Q 60 35 68 48 Q 73 60 72 72"
+        fill="none"
+        stroke="#fde68a"
+        strokeWidth="6"
+        opacity="0.4"
+      />
       
-      {/* Eyes - fierce and visible */}
-      <ellipse cx="43" cy="42" rx="4" ry="5" fill="#fef3c7" />
-      <ellipse cx="57" cy="42" rx="4" ry="5" fill="#fef3c7" />
-      <circle cx="43" cy="42" r="2.5" fill="#431407" />
-      <circle cx="57" cy="42" r="2.5" fill="#431407" />
-      <circle cx="44" cy="41" r="1" fill="#fff" />
-      <circle cx="58" cy="41" r="1" fill="#fff" />
+      {/* Scale segments */}
+      <ellipse cx="25" cy="55" rx="6" ry="4" fill="url(#dragonScaleGrad)" opacity="0.8" />
+      <ellipse cx="32" cy="38" rx="5" ry="3.5" fill="url(#dragonScaleGrad)" opacity="0.8" />
+      <ellipse cx="45" cy="30" rx="6" ry="4" fill="url(#dragonScaleGrad)" opacity="0.8" />
+      <ellipse cx="58" cy="38" rx="5" ry="3.5" fill="url(#dragonScaleGrad)" opacity="0.8" />
+      <ellipse cx="70" cy="55" rx="6" ry="4" fill="url(#dragonScaleGrad)" opacity="0.8" />
       
-      {/* Horns - distinctive */}
-      <path d="M 40 32 L 35 20 L 37 28 Z" fill="#fbbf24" stroke="#c2410c" strokeWidth="1.5" />
-      <path d="M 60 32 L 65 20 L 63 28 Z" fill="#fbbf24" stroke="#c2410c" strokeWidth="1.5" />
+      {/* Elongated dragon head */}
+      <ellipse cx="50" cy="42" rx="18" ry="14" fill="url(#dragonOrangeGrad)" stroke="#7c2d12" strokeWidth="2.5" filter="url(#glow)" />
       
-      {/* Whiskers - flowing and visible */}
-      <line x1="35" y1="47" x2="15" y2="45" stroke="#fde68a" strokeWidth="2.5" strokeLinecap="round" opacity="0.9" />
-      <line x1="35" y1="52" x2="12" y2="55" stroke="#fcd34d" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
-      <line x1="65" y1="47" x2="85" y2="45" stroke="#fde68a" strokeWidth="2.5" strokeLinecap="round" opacity="0.9" />
-      <line x1="65" y1="52" x2="88" y2="55" stroke="#fcd34d" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+      {/* Snout extension */}
+      <ellipse cx="50" cy="48" rx="10" ry="7" fill="url(#dragonOrangeGrad)" stroke="#7c2d12" strokeWidth="2" />
+      <ellipse cx="50" cy="50" rx="7" ry="4" fill="#fde68a" opacity="0.6" />
       
-      {/* Snout detail */}
-      <ellipse cx="50" cy="52" rx="6" ry="4" fill="#fde68a" opacity="0.7" />
-      <ellipse cx="47" cy="53" rx="1.5" ry="1" fill="#7c2d12" />
-      <ellipse cx="53" cy="53" rx="1.5" ry="1" fill="#7c2d12" />
+      {/* Nostrils */}
+      <ellipse cx="46" cy="51" rx="1.5" ry="1.2" fill="#431407" />
+      <ellipse cx="54" cy="51" rx="1.5" ry="1.2" fill="#431407" />
       
-      {/* Beard/mane */}
-      <path d="M 45 58 L 43 68" stroke="#fb923c" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
-      <path d="M 50 60 L 50 72" stroke="#f97316" strokeWidth="3.5" strokeLinecap="round" opacity="0.8" />
-      <path d="M 55 58 L 57 68" stroke="#fb923c" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
+      {/* Slanted reptilian eyes */}
+      <ellipse cx="44" cy="38" rx="4" ry="6" fill="#fef3c7" transform="rotate(-15 44 38)" />
+      <ellipse cx="56" cy="38" rx="4" ry="6" fill="#fef3c7" transform="rotate(15 56 38)" />
+      <ellipse cx="44" cy="38" rx="2" ry="4" fill="#dc2626" />
+      <ellipse cx="56" cy="38" rx="2" ry="4" fill="#dc2626" />
+      <rect x="43" y="36" width="2" height="4" fill="#1c1917" />
+      <rect x="55" y="36" width="2" height="4" fill="#1c1917" />
+      
+      {/* Sharp horns/antlers */}
+      <path d="M 38 32 L 32 18 L 35 26 Z" fill="#fbbf24" stroke="#c2410c" strokeWidth="1.5" />
+      <path d="M 35 30 L 28 16 L 32 24 Z" fill="#fde68a" stroke="#ea580c" strokeWidth="1" />
+      <path d="M 62 32 L 68 18 L 65 26 Z" fill="#fbbf24" stroke="#c2410c" strokeWidth="1.5" />
+      <path d="M 65 30 L 72 16 L 68 24 Z" fill="#fde68a" stroke="#ea580c" strokeWidth="1" />
+      
+      {/* Long flowing whiskers */}
+      <line x1="35" y1="44" x2="8" y2="38" stroke="#fde68a" strokeWidth="2.5" strokeLinecap="round" opacity="0.9" />
+      <line x1="33" y1="48" x2="5" y2="48" stroke="#fcd34d" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+      <line x1="35" y1="52" x2="10" y2="58" stroke="#fde68a" strokeWidth="2.5" strokeLinecap="round" opacity="0.9" />
+      <line x1="65" y1="44" x2="92" y2="38" stroke="#fde68a" strokeWidth="2.5" strokeLinecap="round" opacity="0.9" />
+      <line x1="67" y1="48" x2="95" y2="48" stroke="#fcd34d" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+      <line x1="65" y1="52" x2="90" y2="58" stroke="#fde68a" strokeWidth="2.5" strokeLinecap="round" opacity="0.9" />
+      
+      {/* Flowing beard/mane */}
+      <path d="M 44 54 L 40 65" stroke="#fb923c" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
+      <path d="M 48 56 L 46 68" stroke="#fdba74" strokeWidth="2.5" strokeLinecap="round" opacity="0.7" />
+      <path d="M 50 56 L 50 70" stroke="#f97316" strokeWidth="3.5" strokeLinecap="round" opacity="0.8" />
+      <path d="M 52 56 L 54 68" stroke="#fdba74" strokeWidth="2.5" strokeLinecap="round" opacity="0.7" />
+      <path d="M 56 54 L 60 65" stroke="#fb923c" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
       
       {/* Fire breath (when weak) */}
       {healthPercent < 30 && (
         <>
-          <circle cx="50" cy="56" r="3" fill="#fb923c" opacity="0.9" />
-          <circle cx="46" cy="59" r="2" fill="#fbbf24" opacity="0.8" />
-          <circle cx="54" cy="59" r="2" fill="#fbbf24" opacity="0.8" />
+          <circle cx="50" cy="54" r="3" fill="#fb923c" opacity="0.9" />
+          <circle cx="45" cy="58" r="2.5" fill="#fbbf24" opacity="0.8" />
+          <circle cx="55" cy="58" r="2.5" fill="#fbbf24" opacity="0.8" />
+          <circle cx="47" cy="62" r="2" fill="#fb923c" opacity="0.7" />
+          <circle cx="53" cy="62" r="2" fill="#fb923c" opacity="0.7" />
         </>
       )}
       
-      {/* Pearl/orb */}
-      <circle cx="50" cy="52" r="4" fill="#fbbf24" opacity="0.95" stroke="#f59e0b" strokeWidth="1" />
-      <circle cx="49" cy="51" r="1.5" fill="#fef3c7" opacity="0.9" />
+      {/* Pearl/orb in mouth */}
+      <circle cx="50" cy="48" r="4" fill="#fbbf24" opacity="0.95" stroke="#f59e0b" strokeWidth="1" filter="url(#glow)" />
+      <circle cx="49" cy="47" r="1.5" fill="#fef3c7" opacity="0.9" />
       
       {/* Sparkles */}
-      <circle cx="25" cy="30" r="2" fill="#fbbf24" opacity="0.8">
+      <circle cx="20" cy="25" r="2" fill="#fbbf24" opacity="0.8">
         <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
       </circle>
-      <circle cx="75" cy="35" r="1.5" fill="#fef3c7" opacity="0.9">
+      <circle cx="80" cy="30" r="1.5" fill="#fef3c7" opacity="0.9">
         <animate attributeName="opacity" values="0.5;1;0.5" dur="2.5s" begin="0.5s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="65" cy="20" r="2" fill="#fbbf24" opacity="0.7">
+        <animate attributeName="opacity" values="0.4;0.9;0.4" dur="3s" begin="1s" repeatCount="indefinite" />
       </circle>
       
       {/* Health bar */}
