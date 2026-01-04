@@ -537,3 +537,135 @@ export const GhibliSignboard = () => (
     </g>
   </svg>
 );
+
+// Dragon Boss - "Eastern Red Dragon"
+export const GhibliDragon = ({ health, maxHealth }) => {
+  const healthPercent = (health / maxHealth) * 100;
+  
+  return (
+    <svg viewBox="0 0 200 200" className="w-full h-full">
+      <defs>
+        <radialGradient id="dragonBodyGradient" cx="40%" cy="40%">
+          <stop offset="0%" stopColor="#fee2e2" />
+          <stop offset="50%" stopColor="#dc2626" />
+          <stop offset="100%" stopColor="#7f1d1d" />
+        </radialGradient>
+        <radialGradient id="dragonGlowGradient" cx="50%" cy="50%">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#dc2626" />
+        </radialGradient>
+        <filter id="dragonGlow">
+          <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <linearGradient id="dragonScaleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#dc2626" />
+          <stop offset="50%" stopColor="#b91c1c" />
+          <stop offset="100%" stopColor="#991b1b" />
+        </linearGradient>
+      </defs>
+      
+      {/* Mystical aura */}
+      <circle cx="100" cy="100" r="90" fill="url(#dragonGlowGradient)" opacity="0.2" filter="url(#dragonGlow)" />
+      
+      {/* Dragon body segments (serpentine) */}
+      <path 
+        d="M 60 130 Q 50 100 70 80 Q 90 60 110 70 Q 130 80 140 100 Q 150 120 130 140"
+        fill="url(#dragonBodyGradient)"
+        stroke="#7f1d1d"
+        strokeWidth="2"
+        filter="url(#dragonGlow)"
+      />
+      
+      {/* Dragon scales */}
+      {[
+        { x: 65, y: 115 },
+        { x: 75, y: 95 },
+        { x: 90, y: 80 },
+        { x: 110, y: 75 },
+        { x: 125, y: 85 },
+        { x: 135, y: 105 }
+      ].map((pos, i) => (
+        <ellipse 
+          key={i}
+          cx={pos.x} 
+          cy={pos.y} 
+          rx="8" 
+          ry="6" 
+          fill="url(#dragonScaleGradient)" 
+          opacity="0.8"
+        />
+      ))}
+      
+      {/* Dragon head */}
+      <ellipse cx="100" cy="100" rx="45" ry="40" fill="url(#dragonBodyGradient)" filter="url(#dragonGlow)" />
+      
+      {/* Head details - nostril flares */}
+      <ellipse cx="85" cy="105" rx="4" ry="3" fill="#450a0a" />
+      <ellipse cx="115" cy="105" rx="4" ry="3" fill="#450a0a" />
+      
+      {/* Eyes - fierce and glowing */}
+      <ellipse cx="85" cy="90" rx="10" ry="12" fill="#fef3c7" />
+      <ellipse cx="115" cy="90" rx="10" ry="12" fill="#fef3c7" />
+      <ellipse cx="85" cy="90" rx="6" ry="8" fill="#dc2626" />
+      <ellipse cx="115" cy="90" rx="6" ry="8" fill="#dc2626" />
+      <ellipse cx="83" cy="88" rx="3" ry="4" fill="#450a0a" />
+      <ellipse cx="113" cy="88" rx="3" ry="4" fill="#450a0a" />
+      <circle cx="84" cy="87" r="1.5" fill="#fef3c7" opacity="0.9" />
+      <circle cx="114" cy="87" r="1.5" fill="#fef3c7" opacity="0.9" />
+      
+      {/* Horns */}
+      <path d="M 70 75 Q 65 60 68 50 Q 70 55 72 60 Z" fill="#fbbf24" stroke="#b91c1c" strokeWidth="1.5" />
+      <path d="M 130 75 Q 135 60 132 50 Q 130 55 128 60 Z" fill="#fbbf24" stroke="#b91c1c" strokeWidth="1.5" />
+      
+      {/* Whiskers */}
+      <line x1="70" y1="95" x2="40" y2="90" stroke="#7f1d1d" strokeWidth="2" opacity="0.7" />
+      <line x1="70" y1="100" x2="35" y2="105" stroke="#7f1d1d" strokeWidth="2" opacity="0.7" />
+      <line x1="130" y1="95" x2="160" y2="90" stroke="#7f1d1d" strokeWidth="2" opacity="0.7" />
+      <line x1="130" y1="100" x2="165" y2="105" stroke="#7f1d1d" strokeWidth="2" opacity="0.7" />
+      
+      {/* Dragon beard/mane flowing elements */}
+      <path d="M 100 120 Q 90 135 85 145" stroke="#dc2626" strokeWidth="3" fill="none" opacity="0.6" />
+      <path d="M 100 120 Q 100 140 100 150" stroke="#dc2626" strokeWidth="3" fill="none" opacity="0.6" />
+      <path d="M 100 120 Q 110 135 115 145" stroke="#dc2626" strokeWidth="3" fill="none" opacity="0.6" />
+      
+      {/* Fire breath hint (when active) */}
+      {healthPercent < 30 && (
+        <>
+          <circle cx="100" cy="110" r="6" fill="#fb923c" opacity="0.8" />
+          <circle cx="95" cy="115" r="4" fill="#fdba74" opacity="0.7" />
+          <circle cx="105" cy="115" r="4" fill="#fdba74" opacity="0.7" />
+        </>
+      )}
+      
+      {/* Golden orb/pearl in mouth */}
+      <circle cx="100" cy="105" r="8" fill="#fbbf24" opacity="0.9" filter="url(#dragonGlow)" />
+      <circle cx="98" cy="103" r="3" fill="#fef3c7" opacity="0.8" />
+      
+      {/* Sparkle effects around dragon */}
+      {[
+        { x: 50, y: 70, delay: 0 },
+        { x: 150, y: 70, delay: 0.3 },
+        { x: 60, y: 130, delay: 0.6 },
+        { x: 140, y: 130, delay: 0.9 }
+      ].map((pos, i) => (
+        <g key={i}>
+          <circle cx={pos.x} cy={pos.y} r="3" fill="#fbbf24" opacity="0.6">
+            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" begin={`${pos.delay}s`} repeatCount="indefinite" />
+          </circle>
+          <circle cx={pos.x} cy={pos.y} r="1.5" fill="#fef3c7" />
+        </g>
+      ))}
+      
+      {/* Health bar indicator */}
+      <rect x="50" y="10" width="100" height="8" fill="#450a0a" rx="4" />
+      <rect x="50" y="10" width={healthPercent} height="8" fill="#dc2626" rx="4">
+        <animate attributeName="fill" values="#dc2626;#ef4444;#dc2626" dur="1s" repeatCount="indefinite" />
+      </rect>
+      <rect x="50" y="10" width="100" height="8" fill="none" stroke="#fbbf24" strokeWidth="1" rx="4" />
+    </svg>
+  );
+};
