@@ -69,7 +69,8 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
+        {/* Use Vite base path so routing works on GitHub Pages */}
+        <Router basename={import.meta.env.BASE_URL}>
           <NavigationTracker />
           <AuthenticatedApp />
         </Router>
