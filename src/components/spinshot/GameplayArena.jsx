@@ -131,15 +131,15 @@ export default function GameplayArena({ level, totalScore, currentXp, wheelEffec
     return multiplier;
   };
 
-  // Check for dragon appearance - appears when reaching 500 round score in boss level
+  // Check for dragon appearance - appears when reaching 75 XP in boss level
   useEffect(() => {
-    if (isBoss && roundScore >= 500 && !dragonAppearedRef.current) {
+    if (isBoss && currentXp >= 75 && !dragonAppearedRef.current) {
       dragonAppearedRef.current = true;
       setDragonAppeared(true);
       sounds.dragonAppear();
       triggerScreenShake(4);
     }
-  }, [isBoss, roundScore, sounds]);
+  }, [isBoss, currentXp, sounds]);
 
   // Dragon movement
   useEffect(() => {
