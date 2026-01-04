@@ -45,7 +45,7 @@ const POWERUPS = [
   { id: 'score-boost', name: 'Score Boost', icon: TrendingUp, emoji: '⭐', color: '#f59e0b', description: '2x for 10s' },
 ];
 
-export default function GameplayArena({ level, totalScore, wheelEffect, onRoundEnd }) {
+export default function GameplayArena({ level, totalScore, wheelEffect, onRoundEnd, onRecordDart }) {
   const isBoss = level === 5;
   const initialDarts = isBoss ? 20 : 15;
   const initialTime = isBoss ? 60 : 30;
@@ -379,6 +379,8 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     let totalPoints = 0;
     const targetIds = [];
     const splitTargetsToAdd = [];
+    let isHighValue = false;
+    let isTrapHit = false;
 
     hitTargets.forEach(target => {
 
@@ -396,6 +398,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
         setDarts(prev => Math.max(0, prev - 2));
         setRoundScore(prev => Math.max(0, prev - 50));
         targetIds.push(target.id);
+        isTrapHit = true;
         setHitEffects(prev => [...prev, { 
           id: Date.now() + Math.random(), 
           x: projectile.x, 
@@ -511,7 +514,9 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       // Lucky aim = bonus points
       const luckyBonus = (wheelEffect?.id === 'lucky' || activePowerups['lucky-buff']) ? 1.5 : 1;
       const points = Math.round(target.points * getScoreMultiplier() * luckyBonus);
-      
+
+      if (points >= 200) isHighValue = true;
+
       totalPoints += points;
       targetIds.push(target.id);
       
@@ -605,6 +610,15 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
       }
     }
 
+    // Record dart throw for stats
+    onRecordDart?.({
+      hit: totalPoints > 0 || isTrapHit,
+      points: isTrapHit ? -50 : totalPoints,
+      isTrap: isTrapHit,
+      isHighValue,
+      targetsHit: hitTargets.length,
+    });
+
     // Remove hit targets and add split targets
     setTargets(prev => [...prev.filter(t => !targetIds.includes(t.id)), ...splitTargetsToAdd]);
 
@@ -613,7 +627,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
     setTimeout(() => {
       setProjectiles(prev => prev.filter(p => p.id !== projectile.id));
     }, 150);
-    }, [wheelEffect, sounds, createParticles, triggerScreenShake, getScoreMultiplier]);
+    }, [wheelEffect, sounds, createParticles, triggerScreenShake, getScoreMultiplier, onRecordDart]);
 
   const handleTargetClick = useCallback((target, e) => {
     e.stopPropagation();
@@ -846,7 +860,7 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
             handleProjectileHit({ ...proj, x: newX, y: newY }, hitTargets);
             return; // Don't add to updated array
           }
-          
+
           // Check if projectile reached destination or went off screen
           const rect = arenaRef.current?.getBoundingClientRect();
           if (newDistance >= proj.maxDistance || !rect || newX < 0 || newX > rect.width || newY < 0 || newY > rect.height) {
@@ -859,6 +873,8 @@ export default function GameplayArena({ level, totalScore, wheelEffect, onRoundE
               text: 'MISS', 
               color: '#ef4444' 
             }]);
+            // Record miss for stats
+            onRecordDart?.({ hit: false, points: 0, isTrap: false, isHighValue: false, targetsHit: 0 });
             return; // Don't add to updated array
           }
           

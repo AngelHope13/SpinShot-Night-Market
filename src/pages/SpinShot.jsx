@@ -11,6 +11,7 @@ import Settings from '@/components/spinshot/Settings';
 import Leaderboard from '@/components/spinshot/Leaderboard';
 import Tutorial from '@/components/spinshot/Tutorial';
 import { SettingsProvider, useSettings } from '@/components/spinshot/useSettings';
+import { usePlayerStats } from '@/components/spinshot/usePlayerStats';
 import { base44 } from '@/api/base44Client';
 
 const INITIAL_STATE = {
@@ -40,6 +41,7 @@ function SpinShotGame() {
   const [gameState, setGameState] = useState(INITIAL_STATE);
   const [showTutorial, setShowTutorial] = useState(false);
   const { settings, updateSettings } = useSettings();
+  const { stats, recordDartThrow, resetStats } = usePlayerStats();
 
   // Show tutorial on first launch
   useEffect(() => {
@@ -218,6 +220,7 @@ function SpinShotGame() {
           totalScore={gameState.totalScore}
           wheelEffect={gameState.wheelEffect}
           onRoundEnd={endRound}
+          onRecordDart={recordDartThrow}
         />
       )}
       {gameState.screen === 'results' && (
@@ -231,6 +234,7 @@ function SpinShotGame() {
           currentXp={gameState.xp}
           xpRequired={getXpRequirement(gameState.level)}
           leveledUp={gameState.leveledUp}
+          playerStats={stats}
           onNextLevel={nextLevel}
           onRetry={retryLevel}
           onMenu={backToMenu}
