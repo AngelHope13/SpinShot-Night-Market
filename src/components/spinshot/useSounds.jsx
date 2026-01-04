@@ -592,6 +592,214 @@ export const useSounds = () => {
     }, 700);
   }, []);
 
+  const dragonAppear = useCallback(() => {
+    const ctx = audioContextRef.current;
+    const settings = settingsContextRef.current?.settings;
+    if (!ctx || (settings && !settings.soundEnabled)) return;
+
+    const volume = (settings?.soundVolume || 0.7) * 0.4;
+
+    // Deep drum thumps
+    for (let i = 0; i < 5; i++) {
+      const drum = ctx.createOscillator();
+      const drumGain = ctx.createGain();
+      const drumFilter = ctx.createBiquadFilter();
+      
+      drum.type = 'sine';
+      drum.frequency.value = 60;
+      drumFilter.type = 'lowpass';
+      drumFilter.frequency.value = 150;
+      
+      drum.connect(drumFilter);
+      drumFilter.connect(drumGain);
+      drumGain.connect(ctx.destination);
+      
+      const startTime = ctx.currentTime + (i * 0.25);
+      drumGain.gain.setValueAtTime(volume * (1 + i * 0.1), startTime);
+      drumGain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+      
+      drum.start(startTime);
+      drum.stop(startTime + 0.2);
+    }
+
+    // Dragon roar crescendo
+    setTimeout(() => {
+      const roar = ctx.createOscillator();
+      const roarGain = ctx.createGain();
+      const roarFilter = ctx.createBiquadFilter();
+      
+      roar.type = 'sawtooth';
+      roarFilter.type = 'bandpass';
+      roarFilter.frequency.value = 300;
+      roarFilter.Q.value = 5;
+      
+      roar.connect(roarFilter);
+      roarFilter.connect(roarGain);
+      roarGain.connect(ctx.destination);
+      
+      roar.frequency.setValueAtTime(200, ctx.currentTime);
+      roar.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 1);
+      
+      roarGain.gain.setValueAtTime(0, ctx.currentTime);
+      roarGain.gain.linearRampToValueAtTime(volume * 0.8, ctx.currentTime + 0.3);
+      roarGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1);
+      
+      roar.start(ctx.currentTime);
+      roar.stop(ctx.currentTime + 1);
+    }, 1200);
+  }, []);
+
+  const dragonMove = useCallback(() => {
+    const ctx = audioContextRef.current;
+    const settings = settingsContextRef.current?.settings;
+    if (!ctx || (settings && !settings.soundEnabled)) return;
+
+    const volume = (settings?.soundVolume || 0.7) * 0.15;
+
+    // Swooshing movement sound
+    const swoosh = ctx.createOscillator();
+    const swooshGain = ctx.createGain();
+    const swooshFilter = ctx.createBiquadFilter();
+    
+    swoosh.type = 'sawtooth';
+    swooshFilter.type = 'lowpass';
+    swooshFilter.frequency.value = 600;
+    
+    swoosh.connect(swooshFilter);
+    swooshFilter.connect(swooshGain);
+    swooshGain.connect(ctx.destination);
+    
+    swoosh.frequency.setValueAtTime(400, ctx.currentTime);
+    swoosh.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.15);
+    
+    swooshGain.gain.setValueAtTime(volume, ctx.currentTime);
+    swooshGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    
+    swoosh.start(ctx.currentTime);
+    swoosh.stop(ctx.currentTime + 0.15);
+  }, []);
+
+  const dragonBreatheFire = useCallback(() => {
+    const ctx = audioContextRef.current;
+    const settings = settingsContextRef.current?.settings;
+    if (!ctx || (settings && !settings.soundEnabled)) return;
+
+    const volume = (settings?.soundVolume || 0.7) * 0.45;
+
+    // Inhale (reversed whoosh)
+    const inhale = ctx.createOscillator();
+    const inhaleGain = ctx.createGain();
+    const inhaleFilter = ctx.createBiquadFilter();
+    
+    inhale.type = 'sawtooth';
+    inhaleFilter.type = 'bandpass';
+    inhaleFilter.frequency.value = 400;
+    
+    inhale.connect(inhaleFilter);
+    inhaleFilter.connect(inhaleGain);
+    inhaleGain.connect(ctx.destination);
+    
+    inhale.frequency.setValueAtTime(150, ctx.currentTime);
+    inhale.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.4);
+    
+    inhaleGain.gain.setValueAtTime(0, ctx.currentTime);
+    inhaleGain.gain.linearRampToValueAtTime(volume * 0.5, ctx.currentTime + 0.4);
+    
+    inhale.start(ctx.currentTime);
+    inhale.stop(ctx.currentTime + 0.4);
+
+    // Fire roar
+    setTimeout(() => {
+      const fire = ctx.createOscillator();
+      const fireGain = ctx.createGain();
+      const fireFilter = ctx.createBiquadFilter();
+      
+      fire.type = 'sawtooth';
+      fireFilter.type = 'lowpass';
+      fireFilter.frequency.value = 800;
+      
+      fire.connect(fireFilter);
+      fireFilter.connect(fireGain);
+      fireGain.connect(ctx.destination);
+      
+      fire.frequency.setValueAtTime(250, ctx.currentTime);
+      fire.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 1.5);
+      fireFilter.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 1.5);
+      
+      fireGain.gain.setValueAtTime(volume, ctx.currentTime);
+      fireGain.gain.setValueAtTime(volume, ctx.currentTime + 1.2);
+      fireGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+      
+      fire.start(ctx.currentTime);
+      fire.stop(ctx.currentTime + 1.5);
+
+      // Crackling fire effect
+      for (let i = 0; i < 8; i++) {
+        const crackle = ctx.createOscillator();
+        const crackleGain = ctx.createGain();
+        crackle.type = 'square';
+        crackle.frequency.value = 1000 + Math.random() * 1000;
+        crackle.connect(crackleGain);
+        crackleGain.connect(ctx.destination);
+        
+        const startTime = ctx.currentTime + (i * 0.08);
+        crackleGain.gain.setValueAtTime(volume * 0.2, startTime);
+        crackleGain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.05);
+        
+        crackle.start(startTime);
+        crackle.stop(startTime + 0.05);
+      }
+    }, 400);
+  }, []);
+
+  const dragonDefeat = useCallback(() => {
+    const ctx = audioContextRef.current;
+    const settings = settingsContextRef.current?.settings;
+    if (!ctx || (settings && !settings.soundEnabled)) return;
+
+    const volume = (settings?.soundVolume || 0.7) * 0.5;
+
+    // Final roar (descending, fading)
+    const roar = ctx.createOscillator();
+    const roarGain = ctx.createGain();
+    const roarFilter = ctx.createBiquadFilter();
+    
+    roar.type = 'sawtooth';
+    roarFilter.type = 'lowpass';
+    roarFilter.frequency.value = 600;
+    
+    roar.connect(roarFilter);
+    roarFilter.connect(roarGain);
+    roarGain.connect(ctx.destination);
+    
+    roar.frequency.setValueAtTime(300, ctx.currentTime);
+    roar.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 2);
+    roarFilter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 2);
+    
+    roarGain.gain.setValueAtTime(volume, ctx.currentTime);
+    roarGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2);
+    
+    roar.start(ctx.currentTime);
+    roar.stop(ctx.currentTime + 2);
+
+    // Echo/reverb effect
+    for (let i = 1; i <= 3; i++) {
+      const echo = ctx.createOscillator();
+      const echoGain = ctx.createGain();
+      echo.type = 'sine';
+      echo.frequency.value = 150 - (i * 20);
+      echo.connect(echoGain);
+      echoGain.connect(ctx.destination);
+      
+      const startTime = ctx.currentTime + (i * 0.4);
+      echoGain.gain.setValueAtTime(volume * (0.3 / i), startTime);
+      echoGain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.8);
+      
+      echo.start(startTime);
+      echo.stop(startTime + 0.8);
+    }
+  }, []);
+
   return {
     dartThrow,
     targetHit,
@@ -602,5 +810,9 @@ export const useSounds = () => {
     levelComplete,
     levelFailed,
     victory,
+    dragonAppear,
+    dragonMove,
+    dragonBreatheFire,
+    dragonDefeat,
   };
 };
